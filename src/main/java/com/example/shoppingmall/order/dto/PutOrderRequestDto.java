@@ -1,17 +1,19 @@
 package com.example.shoppingmall.order.dto;
 
 import com.example.shoppingmall.order.type.OrderStatus;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-public class PostOrderRequestDto {
-	private Long userId;
-	private Long itemId;
-	private String orderAddress;
+public class PutOrderRequestDto {
+
+
+	@NotNull(message = "주문 상태는 필수입니다.")
 	private OrderStatus orderStatus;
-	private Integer orderPrice;
+
+	public OrderStatus getOrderStatus() {
+		return orderStatus;
+	}
 }

@@ -37,6 +37,13 @@ public class User {
 	@Column
 	private LocalDateTime createdAt;
 	@Column
-	private Boolean isDeleted;
+	private Boolean isDeleted = false;
 
+	public void updatePassword(String newPassword) {
+		this.password = newPassword;
+	}
+
+	public void softDeleted() {
+		this.isDeleted = true;
+	}
 }

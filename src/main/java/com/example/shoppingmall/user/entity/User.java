@@ -34,8 +34,10 @@ public class User {
 	//@Enumerated(value = EnumType.STRING)
 	//@Convert(converter = UserRoleConverter.class) => autoApply = ture가 자동으로 해줌
 	private UserRole userRole;
+
 	@Column
 	private LocalDateTime createdAt;
+
 	@Column
 	private Boolean isDeleted = false;
 

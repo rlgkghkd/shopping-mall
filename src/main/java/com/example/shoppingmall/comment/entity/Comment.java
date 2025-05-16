@@ -16,5 +16,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Comment extends BaseEntity {
 	@Id
-	private Long Id;
+	private Long id;
 }

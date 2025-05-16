@@ -22,7 +22,7 @@ public class UserController {
 
 	/*
 	회원 비밀번호 수정
-	암호화내용 추가 예정
+	암호화 추가 예정
 	 */
 	@PatchMapping("/{userId}")
 	public ResponseEntity<String> updatePassword(
@@ -35,6 +35,7 @@ public class UserController {
 
 	/*
 	회원탈퇴 : 비밀번호 입력으로 한번 더 확인
+	암호화 추가 예정
 	 */
 	@DeleteMapping("/{userId}")
 	public ResponseEntity<String> delete(

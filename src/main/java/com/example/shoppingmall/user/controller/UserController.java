@@ -1,8 +1,10 @@
 package com.example.shoppingmall.user.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.shoppingmall.user.dto.request.DeleteRequestDto;
 import com.example.shoppingmall.user.dto.request.UpdatePasswordRequestDto;
+import com.example.shoppingmall.user.dto.response.UserResponseDto;
 import com.example.shoppingmall.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 	private final UserService userService;
+
+	@GetMapping("/{userId}")
+	public ResponseEntity<UserResponseDto> findById(
+		@PathVariable Long userId
+	) {
+		UserResponseDto userResponseDto = userService.findById(userId);
+		return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
+	}
 
 	/*
 	회원 비밀번호 수정

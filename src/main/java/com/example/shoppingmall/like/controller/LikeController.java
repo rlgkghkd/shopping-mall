@@ -28,11 +28,11 @@ public class LikeController {
 		return ResponseEntity.ok(likeService.leaveLikeOnComment(commentId, 1L));
 	}
 
-	//그냥 /likes/{likesId} ?
-	@DeleteMapping("/items/{itemId}/likes/{likeId}")
-	public ResponseEntity<String> deleteLikeOnItem(@PathVariable Long likeId) {
+	//comments/{commentId}/likes/{likeId}
+	//items/{itemId}/likes/{likeId} 아니면 이렇게 분리?
+	@DeleteMapping("/likes/{likeId}")
+	public ResponseEntity<String> deleteLike(@PathVariable Long likeId) {
 		likeService.deleteLike(likeId, 1L);
 		return ResponseEntity.ok("삭제되었습니다.");
 	}
-
 }

@@ -41,6 +41,13 @@ public class User {
 	@Column
 	private Boolean isDeleted = false;
 
+	public User(String userName, String email, UserRole userRole, String encodePassword) {
+		this.username = userName;
+		this.email = email;
+		this.userRole = userRole;
+		this.password = encodePassword;
+	}
+
 	public void updatePassword(String newPassword) {
 		this.password = newPassword;
 	}

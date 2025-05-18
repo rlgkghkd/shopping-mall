@@ -29,13 +29,12 @@ public class SecurityFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 		// 헤더를 통해 들어온 토큰을 빼냄 => 이때 토큰은 string 형태임
-		String authHeader = request.getHeader("Authorization");
 		/*
 		if (jwtUtil.subStringToken(authHeader))
 		=> if문 안에 있는 값은 boolean 이다.
 		 */
 		//BEARER 떼어냄
-		String token = jwtUtil.subStringToken(authHeader);
+		String token = jwtUtil.subStringToken(request);
 		/*
 		filterChian.doFilter(request, response)
 		=>  요청을 다음으로 넘기는 것으로

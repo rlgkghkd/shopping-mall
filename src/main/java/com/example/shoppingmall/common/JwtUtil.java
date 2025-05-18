@@ -1,6 +1,5 @@
 package com.example.shoppingmall.common;
 
-import java.rmi.ServerException;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -8,11 +7,14 @@ import java.util.Date;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.example.shoppingmall.user.enums.UserRole;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Value;
 
 @Component
@@ -32,7 +34,7 @@ public class JwtUtil {
 		key = Keys.hmacShaKeyFor(bytes);
 	}
 
-	public String createToken(Long userId, String userName, String email, String userRole) {
+	public String createToken(Long userId, UserRole userRole) {
 		Date date = new Date();
 
 		return BEARER_PREFIX + Jwts.builder() //jwt을 이렇게 만들겠다 하는 매서드
@@ -44,11 +46,14 @@ public class JwtUtil {
 			.compact();
 	}
 
-	public String subStringToken(String tokenValue) throws ServerException {
+	public String subStringToken(HttpServletRequest request) {
+		String tokenValue = request.getHeader("Authorization");
+
 		if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
-			return tokenValue.substring(7);
+			return tokenValue.substring(BEARER_PREFIX.length()); // 7
 		}
-		throw new ServerException("NOT_FOUND_TOKEN");
+
+		throw new IllegalArgumentException("NOT_FOUND_TOKEN");
 	}
 
 	public Claims extractClaim(String token) {
@@ -66,6 +71,19 @@ public class JwtUtil {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	public Long expiration(String token) {
+		Claims claim = Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJwt(token)
+			.getBody();
+		/*
+		JWT 토큰의 만료 시간까지 얼마나 남았는지 밀리초 단위로 계산함
+		 */
+		return claim.getExpiration().getTime() - System.currentTimeMillis();
+
 	}
 
 }

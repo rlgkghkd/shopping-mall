@@ -3,6 +3,7 @@ package com.example.shoppingmall.auth.service;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
+	private final RedisTemplate redisTemplate;
 
 	public SignUpResponseDto signUp(SignUpRequestDto signupRequestDto) {
 		/*

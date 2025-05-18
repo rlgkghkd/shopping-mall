@@ -3,6 +3,7 @@ package com.example.shoppingmall.auth.dto.request;
 import com.example.shoppingmall.user.enums.UserRole;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,6 @@ public class SignUpRequestDto {
 	)
 	private String password;
 
-	@NotBlank
+	@NotNull //enum은 NotBlank 사용 안함
 	private UserRole userRole;
 }

@@ -46,6 +46,7 @@ public class User {
 		this.email = email;
 		this.userRole = userRole;
 		this.password = encodePassword;
+		this.createdAt = LocalDateTime.now();
 	}
 
 	public void updatePassword(String newPassword) {

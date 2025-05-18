@@ -4,6 +4,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -15,7 +16,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Value;
 
 @Component
 public class JwtUtil {
@@ -53,14 +53,14 @@ public class JwtUtil {
 			return tokenValue.substring(BEARER_PREFIX.length()); // 7
 		}
 
-		throw new IllegalArgumentException("NOT_FOUND_TOKEN");
+		return null;
 	}
 
 	public Claims extractClaim(String token) {
 		return Jwts.parserBuilder()
 			.setSigningKey(key)
 			.build()
-			.parseClaimsJwt(token)
+			.parseClaimsJws(token)
 			.getBody();
 	}
 
@@ -77,7 +77,7 @@ public class JwtUtil {
 		Claims claim = Jwts.parserBuilder()
 			.setSigningKey(key)
 			.build()
-			.parseClaimsJwt(token)
+			.parseClaimsJws(token)
 			.getBody();
 		/*
 		JWT 토큰의 만료 시간까지 얼마나 남았는지 밀리초 단위로 계산함

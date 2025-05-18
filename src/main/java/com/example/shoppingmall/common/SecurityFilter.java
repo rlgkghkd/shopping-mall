@@ -34,6 +34,12 @@ public class SecurityFilter extends OncePerRequestFilter {
 		=> if문 안에 있는 값은 boolean 이다.
 		 */
 		//BEARER 떼어냄
+		String uri = request.getRequestURI();
+		if (uri.startsWith("/api/auth")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		String token = jwtUtil.subStringToken(request);
 		/*
 		filterChian.doFilter(request, response)
@@ -44,9 +50,10 @@ public class SecurityFilter extends OncePerRequestFilter {
 		 */
 		/*
 		토큰 값을 claims로 바꾸기
+
 		 */
 		try {
-			if (jwtUtil.validationToken(token)) { //유효성 검사
+			if (token != null && jwtUtil.validationToken(token)) { //유효성 검사
 				Claims claim = jwtUtil.extractClaim(token); // 토큰에 내가 넣은 값을 덩어리로 가져옴
 				/*
 				나는 사용자 정보를 내 JWT에 전부 저장하였기때문에 DB에서 조회하지 않고,
@@ -66,11 +73,11 @@ public class SecurityFilter extends OncePerRequestFilter {
 				이렇게 만들어진 authentication 구현체는 securityContextHolder.getContext().setAuthentication()에 저장해서 현제 요청이
 				인증된 사용자임을 알려줌
 				UsernamePasswordAuthenticationToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities)
-				principal : 사용자 인증 정보(userId)
+				principal : 사용자 인증 정보(userId) -> 이게 @AuthentictionPrincipal에 들어가는 내용
 				credentials: 인증 수단 (JWT 인증에서는 null 가능)
 				authorities : 사용자 권한 정보
 				 */
-				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(claim.getSubject(),
+				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(claim,
 					null,
 					authorities);
 

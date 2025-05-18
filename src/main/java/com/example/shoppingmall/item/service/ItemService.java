@@ -1,7 +1,7 @@
 package com.example.shoppingmall.item.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,30 +36,30 @@ public class ItemService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ItemResponseDto> getAllItems() {
-		List<Item> items = itemRepository.findAll();
-		return ItemResponseDto.fromEntityList(items);
+	public Page<ItemResponseDto> getAllItems(Pageable pageable) {
+		Page<Item> items = itemRepository.findAll(pageable);
+		return items.map(ItemResponseDto::fromEntity);
 	}
 
 	@Transactional(readOnly = true)
-	public ItemResponseDto findById(long id){
+	public ItemResponseDto findById(long id) {
 		Item item = itemRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
 		return ItemResponseDto.fromEntity(item);
 	}
 
 	@Transactional
-	public ItemResponseDto updateItem(long id, ItemResponseDto dto){
+	public ItemResponseDto updateItem(long id, ItemResponseDto dto) {
 		Item item = itemRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
 
-		item.update(dto.getItemName(), dto.getContent(), dto.getPrice(),dto.getCategory());
+		item.update(dto.getItemName(), dto.getContent(), dto.getPrice(), dto.getCategory());
 
 		return ItemResponseDto.fromEntity(item);
 	}
 
 	@Transactional
-	public void deleteItem(long id){
+	public void deleteItem(long id) {
 		Item item = itemRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
 

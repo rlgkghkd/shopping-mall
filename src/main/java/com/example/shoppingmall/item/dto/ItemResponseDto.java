@@ -1,8 +1,5 @@
 package com.example.shoppingmall.item.dto;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.example.shoppingmall.item.Category;
 import com.example.shoppingmall.item.entity.Item;
 
@@ -28,12 +25,6 @@ public class ItemResponseDto {
 			.price(item.getPrice())
 			.category(item.getCategory())
 			.build();
-	}
-
-	public static List<ItemResponseDto> fromEntityList(List<Item> items) {
-		return items.stream()
-			.map(ItemResponseDto::fromEntity)
-			.collect(Collectors.toList());
 	}
 
 }

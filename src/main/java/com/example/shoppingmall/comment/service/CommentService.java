@@ -1,9 +1,13 @@
 package com.example.shoppingmall.comment.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.shoppingmall.comment.dto.request.CreateCommentRequestDto;
 import com.example.shoppingmall.comment.dto.response.CreateCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.FindByAllCommentResponseDto;
 import com.example.shoppingmall.comment.entity.Comment;
 import com.example.shoppingmall.comment.repository.CommentRepository;
 import com.example.shoppingmall.item.entity.Item;
@@ -53,29 +57,73 @@ public class CommentService {
 			);
 
 		} else {
-			Comment comment = getCommentOrThrow(createCommentRequestDto.getCommentId());
-			if (comment.getReply() != null) {
+			Comment parentComment = getCommentOrThrow(createCommentRequestDto.getCommentId());
+
+			if (parentComment.getReply() != null) {
 				throw new IllegalArgumentException("이미 답글이 존재합니다.");
 			}
 
+			// reply 먼저 저장
 			Comment reply = new Comment(
 				createCommentRequestDto.getContent(),
 				user,
 				item,
 				order
 			);
+			reply.setParentComment(parentComment);
+			Comment savedReply = commentRepository.save(reply);
 
-			comment.setReply(reply);
-			Comment createdReply = commentRepository.save(reply);
+			// 부모 댓글에 reply 연결
+			parentComment.setReply(savedReply);
+			commentRepository.save(parentComment);
 
 			return new CreateCommentResponseDto(
-				createdReply.getId(),
-				createdReply.getOrder().getId(),
-				createdReply.getUser().getId(),
-				createdReply.getContent(),
-				createdReply.getCreatedAt()
+				reply.getId(),
+				reply.getOrder().getId(),
+				reply.getUser().getId(),
+				reply.getContent(),
+				reply.getCreatedAt()
 			);
 		}
+
+	}
+
+	public List<FindByAllCommentResponseDto> findByAllComment() {
+		// 부모 댓글만 조회
+		List<Comment> parentComments = commentRepository.findByparentCommentIsNull();
+		// 조회된 내용 닮을 리스트 생성
+		List<FindByAllCommentResponseDto> findByAllCommentList = new ArrayList<>();
+
+		for (Comment parent : parentComments) {
+
+			// 자식 댓글을 초기화
+			CreateCommentResponseDto replyDto = null;
+
+			// 부모 댓글에 reply가 있으면 reply DTO 생성
+			if (parent.getReply() != null) {
+				Comment reply = parent.getReply();
+				replyDto = new CreateCommentResponseDto(
+					reply.getId(),
+					reply.getOrder().getId(),
+					reply.getUser().getId(),
+					reply.getContent(),
+					reply.getCreatedAt()
+				);
+			}
+
+			FindByAllCommentResponseDto parentDto = new FindByAllCommentResponseDto(
+				parent.getId(),
+				parent.getOrder().getId(),
+				parent.getUser().getId(),
+				parent.getContent(),
+				parent.getCreatedAt(),
+				replyDto
+			);
+
+			findByAllCommentList.add(parentDto);
+		}
+
+		return findByAllCommentList;
 
 	}
 

@@ -47,6 +47,10 @@ public class Comment extends BaseEntity {
 	@JoinColumn(name = "reply_id")
 	private Comment reply;
 
+	@OneToOne
+	@JoinColumn(name = "parent_comment_id")
+	private Comment parentComment;
+
 	public Comment(String content, User user, Item item, Order order) {
 		this.content = content;
 		this.user = user;
@@ -56,6 +60,10 @@ public class Comment extends BaseEntity {
 
 	public void setReply(Comment reply) {
 		this.reply = reply;
+	}
+
+	public void setParentComment(Comment parentComment) {
+		this.parentComment = parentComment;
 	}
 
 }

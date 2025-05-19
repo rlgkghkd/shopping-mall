@@ -10,14 +10,17 @@ import com.example.shoppingmall.comment.dto.request.UpdateCommentRequestDto;
 import com.example.shoppingmall.comment.dto.response.CreateCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.DeleteCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.FindByAllCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.FindByIdCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.UpdateCommentResponseDto;
 import com.example.shoppingmall.comment.entity.Comment;
 import com.example.shoppingmall.comment.repository.CommentRepository;
+import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.order.entity.Order;
 import com.example.shoppingmall.order.repository.OrderRepository;
 import com.example.shoppingmall.user.entity.User;
+import com.example.shoppingmall.user.enums.UserRole;
 import com.example.shoppingmall.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -32,15 +35,20 @@ public class CommentService {
 	private final ItemRepository itemRepository;
 	private final OrderRepository orderRepository;
 
-	public CreateCommentResponseDto createComment(CreateCommentRequestDto createCommentRequestDto) {
+	public CreateCommentResponseDto createComment(
+		CreateCommentRequestDto createCommentRequestDto,
+		CustomUserDetails customUserDetails) {
 
-		Long userId = 1L; // 추후에 지울거예요   // JWT 유저ID - order.getUserId();  비교용
-
+		User user = getUserOrThrow(customUserDetails.getUserId());
 		Order order = getOrderOrThrow(createCommentRequestDto.getOrderId());
 		Item item = getItemOrThrow(order.getItem().getId());
-		User user = getUserOrThrow(userId);
 
 		if (createCommentRequestDto.getCommentId() == null) {
+
+			// 로그인한 유저와 주문한 유저가 다르면 예외 처리
+			if (!order.getUser().getId().equals(user.getId())) {
+				throw new IllegalArgumentException("댓글을 작성할 권한이 없습니다. 주문자만 댓글을 작성할 수 있습니다.");
+			}
 
 			Comment comment = new Comment(
 				createCommentRequestDto.getContent(),
@@ -54,12 +62,17 @@ public class CommentService {
 			return new CreateCommentResponseDto(
 				createdComment.getId(),
 				createdComment.getOrder().getId(),
-				createdComment.getUser().getId(),
+				createdComment.getUser().getUsername(),
 				createdComment.getContent(),
 				createdComment.getCreatedAt()
 			);
 
 		} else {
+			// 관리자가 아니면 예외 처리
+			if (user.getUserRole() != UserRole.ADMIN) {
+				throw new IllegalArgumentException("답글은 관리자만 달 수 있습니다.");
+			}
+
 			Comment parentComment = getCommentOrThrow(createCommentRequestDto.getCommentId());
 
 			if (parentComment.getReply() != null) {
@@ -83,7 +96,7 @@ public class CommentService {
 			return new CreateCommentResponseDto(
 				reply.getId(),
 				reply.getOrder().getId(),
-				reply.getUser().getId(),
+				reply.getUser().getUsername(),
 				reply.getContent(),
 				reply.getCreatedAt()
 			);
@@ -92,6 +105,7 @@ public class CommentService {
 	}
 
 	public List<FindByAllCommentResponseDto> findByAllComment() {
+
 		// 부모 댓글만 조회
 		List<Comment> parentComments = commentRepository.findByparentCommentIsNull();
 		// 조회된 내용 닮을 리스트 생성
@@ -108,7 +122,7 @@ public class CommentService {
 				replyDto = new CreateCommentResponseDto(
 					reply.getId(),
 					reply.getOrder().getId(),
-					reply.getUser().getId(),
+					reply.getUser().getUsername(),
 					reply.getContent(),
 					reply.getCreatedAt()
 				);
@@ -128,6 +142,41 @@ public class CommentService {
 		}
 
 		return findByAllCommentList;
+
+	}
+
+	public FindByIdCommentResponseDto findByComment(Long id, CustomUserDetails customUserDetails) {
+		Comment comment = getCommentOrThrow(id);
+		User user = getUserOrThrow(customUserDetails.getUserId());
+
+		if (!comment.getUser().getId().equals(user.getId())) {
+			throw new IllegalArgumentException("본인 댓글이 아니면 조회할 수 없습니다.");
+		}
+
+		// 답글이 존재하면 DTO로 변환
+		CreateCommentResponseDto replyDto = null;
+
+		if (comment.getReply() != null) {
+			Comment reply = comment.getReply();
+
+			replyDto = new CreateCommentResponseDto(
+				reply.getId(),
+				reply.getOrder().getId(),
+				reply.getUser().getUsername(),
+				reply.getContent(),
+				reply.getCreatedAt()
+			);
+		}
+
+		return new FindByIdCommentResponseDto(
+			comment.getId(),
+			comment.getOrder().getId(),
+			comment.getUser().getId(), // 추후에 username으로 변경 가능
+			comment.getContent(),
+			comment.getCreatedAt(),
+			comment.getUpdatedAt(),
+			replyDto
+		);
 
 	}
 
@@ -171,4 +220,5 @@ public class CommentService {
 	public Comment getCommentOrThrow(Long commentId) {
 		return commentRepository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 	}
+
 }

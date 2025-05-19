@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,10 @@ import com.example.shoppingmall.comment.dto.request.UpdateCommentRequestDto;
 import com.example.shoppingmall.comment.dto.response.CreateCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.DeleteCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.FindByAllCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.FindByIdCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.UpdateCommentResponseDto;
 import com.example.shoppingmall.comment.service.CommentService;
+import com.example.shoppingmall.common.CustomUserDetails;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +36,11 @@ public class CommentController {
 
 	@PostMapping
 	public ResponseEntity<CreateCommentResponseDto> createdComment(
-		@Valid @RequestBody CreateCommentRequestDto createCommentRequestDto
+		@Valid @RequestBody CreateCommentRequestDto createCommentRequestDto,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		CreateCommentResponseDto createComment = commentService.createComment(createCommentRequestDto);
+		CreateCommentResponseDto createComment = commentService.createComment(createCommentRequestDto,
+			customUserDetails);
 		return ResponseEntity.status(HttpStatus.CREATED).body(createComment);
 	}
 
@@ -43,6 +48,15 @@ public class CommentController {
 	public ResponseEntity<List<FindByAllCommentResponseDto>> findByAllComment() {
 		List<FindByAllCommentResponseDto> findByAllCommentList = commentService.findByAllComment();
 		return ResponseEntity.ok(findByAllCommentList);
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<FindByIdCommentResponseDto> findByComment(
+		@PathVariable Long id,
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
+	) {
+		FindByIdCommentResponseDto findByComment = commentService.findByComment(id, customUserDetails);
+		return ResponseEntity.ok(findByComment);
 	}
 
 	@PutMapping("/{id}")

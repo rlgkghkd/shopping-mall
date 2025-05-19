@@ -2,8 +2,6 @@ package com.example.shoppingmall.like.entity;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import com.example.shoppingmall.comment.entity.Comment;
@@ -32,17 +30,14 @@ public class Like {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "comment_id")
 	private Comment comment;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "item_id")
 	private Item item;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 

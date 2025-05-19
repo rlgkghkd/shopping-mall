@@ -28,11 +28,15 @@ public class LikeService {
 	public LeaveLikeResponseDto leaveLikeOnItem(Long itemId, Long userId) {
 		Item item = itemRepository.findById(itemId).orElseThrow();
 		User user = userRepository.findById(userId).orElseThrow();
+
 		if (likeRepository.searchLikeByUserAndContent(userId, null, item)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
+
 		Like like = new Like(null, item, user);
 		Like saved = likeRepository.save(like);
+		item.increaseLikeCount(1L);
+
 		LeaveLikeResponseDto responseDto = new LeaveLikeResponseDto(saved.getItem().getClass().toString(),
 			saved.getItem().getId(), saved.getId(), saved.getCreatedAt());
 		return responseDto;
@@ -41,26 +45,44 @@ public class LikeService {
 	public LeaveLikeResponseDto leaveLikeOnComment(Long commentId, Long userId) {
 		Comment comment = commentRepository.findById(commentId).orElseThrow();
 		User user = userRepository.findById(userId).orElseThrow();
+
 		if (likeRepository.searchLikeByUserAndContent(userId, comment, null)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
+
 		Like like = new Like(comment, null, user);
 		Like saved = likeRepository.save(like);
+		comment.increaseLikeCount(1L);
+
 		LeaveLikeResponseDto responseDto = new LeaveLikeResponseDto(saved.getComment().getClass().toString(),
 			saved.getComment().getId(), saved.getId(), saved.getCreatedAt());
 		return responseDto;
 	}
 
 	@DistributedLock(key = "delete Like")
-	public void deleteLike(Long likeId, long userId) {
+	public void deleteLikeOnItem(Long likeId, long userId) {
 		Like like = likeRepository.findById(likeId).orElseThrow();
 		Item item = like.getItem();
-		System.out.println("Final likeCount: " + item.getLikeCount());
-		item.setLikeCount(item.getLikeCount() - 1);
-		itemRepository.save(item);
+
 		if (!like.getUser().getId().equals(userId)) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 		}
+
 		likeRepository.delete(like);
+		item.decreaseLikeCount(1L);
+		itemRepository.save(item);
+	}
+
+	public void deleteLikeOnComment(Long likeId, long userId) {
+		Like like = likeRepository.findById(likeId).orElseThrow();
+		Comment comment = like.getComment();
+
+		if (!like.getUser().getId().equals(userId)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+		}
+
+		likeRepository.delete(like);
+		comment.decreaseLikeCount(1L);
+		commentRepository.save(comment);
 	}
 }

@@ -1,18 +1,18 @@
 package com.example.shoppingmall.like.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.shoppingmall.like.dto.LeaveLikeResponseDto;
 import com.example.shoppingmall.like.service.LikeService;
 
 import lombok.RequiredArgsConstructor;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class LikeController {
@@ -28,11 +28,15 @@ public class LikeController {
 		return ResponseEntity.ok(likeService.leaveLikeOnComment(commentId, 1L));
 	}
 
-	//comments/{commentId}/likes/{likeId}
-	//items/{itemId}/likes/{likeId} 아니면 이렇게 분리?
-	@DeleteMapping("/likes/{likeId}")
-	public ResponseEntity<String> deleteLike(@PathVariable Long likeId) {
-		likeService.deleteLike(likeId, 1L);
+	@DeleteMapping("/items/{itemId}/likes/{likeId}")
+	public ResponseEntity<String> deleteLikeOnItem(@PathVariable Long likeId) {
+		likeService.deleteLikeOnItem(likeId, 1L);
+		return ResponseEntity.ok("삭제되었습니다.");
+	}
+
+	@DeleteMapping("/comments/{commentId}/likes/{likeId}")
+	public ResponseEntity<String> deleteLikeOnComment(@PathVariable Long likeId) {
+		likeService.deleteLikeOnComment(likeId, 1L);
 		return ResponseEntity.ok("삭제되었습니다.");
 	}
 }

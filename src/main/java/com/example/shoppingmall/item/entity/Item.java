@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -43,8 +42,16 @@ public class Item extends BaseEntity {
 	@Column(nullable = false)
 	private Category category;
 
-	@Setter
+	@Column(columnDefinition = "bigint default 0")
 	private Long likeCount;
+
+	public void increaseLikeCount(Long amount) {
+		this.likeCount += amount;
+	}
+
+	public void decreaseLikeCount(Long amount) {
+		this.likeCount -= amount;
+	}
 
 	public void update(String itemName, String content, int price, Category category) {
 		this.itemName = itemName;

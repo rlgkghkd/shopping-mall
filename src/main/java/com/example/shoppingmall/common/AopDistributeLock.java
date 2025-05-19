@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.redisson.config.SingleServerConfig;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -30,6 +31,10 @@ public class AopDistributeLock {
 		long rentingTime = distributedLock.rentingTime();
 
 		RLock lock = redissonClient.getLock(key);
+		SingleServerConfig serverConfig = redissonClient.getConfig().useSingleServer();
+		int dbNumber = serverConfig.getDatabase();
+
+		log.info(dbNumber + ": asd");
 
 		boolean isLocked = false;
 		try {

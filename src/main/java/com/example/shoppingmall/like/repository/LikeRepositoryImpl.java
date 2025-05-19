@@ -20,12 +20,13 @@ public class LikeRepositoryImpl implements LikeRepositoryCustom {
 		QUser user = QUser.user;
 		QComment qComment = QComment.comment;
 		QItem qItem = QItem.item;
-		return queryFactory.selectOne()
+		System.out.println("k where");
+		return queryFactory.select(like.id) // id만 조회하여 존재 여부 체크
 			.from(like)
 			.where(
 				user.id.eq(userId),
-				comment != null ? qComment.eq(comment) : null,
-				item != null ? qItem.eq(item) : null
-			).fetch() != null;
+				comment != null ? qComment.id.eq(comment.getId()) : null,
+				item != null ? qItem.Id.eq(item.getId()) : null
+			).fetchFirst() != null;
 	}
 }

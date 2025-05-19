@@ -2,11 +2,13 @@ package com.example.shoppingmall.like.service;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.shoppingmall.comment.entity.Comment;
 import com.example.shoppingmall.comment.repository.CommentRepository;
 import com.example.shoppingmall.common.DistributedLock;
+import com.example.shoppingmall.common.JwtUtil;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.like.dto.LeaveLikeResponseDto;
@@ -15,6 +17,8 @@ import com.example.shoppingmall.like.repository.LikeRepository;
 import com.example.shoppingmall.user.entity.User;
 import com.example.shoppingmall.user.repository.UserRepository;
 
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,12 +28,19 @@ public class LikeService {
 	private final ItemRepository itemRepository;
 	private final UserRepository userRepository;
 	private final CommentRepository commentRepository;
+	private final JwtUtil jwtUtil;
 
-	public LeaveLikeResponseDto leaveLikeOnItem(Long itemId, Long userId) {
+	@Transactional
+	public LeaveLikeResponseDto leaveLikeOnItem(Long itemId, HttpServletRequest request) {
+		String token = jwtUtil.subStringToken(request);
+		Claims claims = jwtUtil.extractClaim(token);
+
 		Item item = itemRepository.findById(itemId).orElseThrow();
-		User user = userRepository.findById(userId).orElseThrow();
+		String userMail = claims.get("email", String.class);
+		User user = userRepository.findByEmail(userMail)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-		if (likeRepository.searchLikeByUserAndContent(userId, null, item)) {
+		if (likeRepository.searchLikeByUserAndContent(user.getId(), null, item)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
 
@@ -42,11 +53,17 @@ public class LikeService {
 		return responseDto;
 	}
 
-	public LeaveLikeResponseDto leaveLikeOnComment(Long commentId, Long userId) {
-		Comment comment = commentRepository.findById(commentId).orElseThrow();
-		User user = userRepository.findById(userId).orElseThrow();
+	@Transactional
+	public LeaveLikeResponseDto leaveLikeOnComment(Long commentId, HttpServletRequest request) {
+		String token = jwtUtil.subStringToken(request);
+		Claims claims = jwtUtil.extractClaim(token);
 
-		if (likeRepository.searchLikeByUserAndContent(userId, comment, null)) {
+		Comment comment = commentRepository.findById(commentId).orElseThrow();
+		String userMail = claims.get("email", String.class);
+		User user = userRepository.findByEmail(userMail)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+		if (likeRepository.searchLikeByUserAndContent(user.getId(), comment, null)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
 
@@ -60,11 +77,17 @@ public class LikeService {
 	}
 
 	@DistributedLock(key = "delete Like")
-	public void deleteLikeOnItem(Long likeId, long userId) {
+	public void deleteLikeOnItem(Long likeId, HttpServletRequest request) {
+		String token = jwtUtil.subStringToken(request);
+		Claims claims = jwtUtil.extractClaim(token);
+		String userMail = claims.get("email", String.class);
+		User user = userRepository.findByEmail(userMail)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
 		Like like = likeRepository.findById(likeId).orElseThrow();
 		Item item = like.getItem();
 
-		if (!like.getUser().getId().equals(userId)) {
+		if (!like.getUser().getId().equals(user.getId())) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 		}
 
@@ -73,11 +96,17 @@ public class LikeService {
 		itemRepository.save(item);
 	}
 
-	public void deleteLikeOnComment(Long likeId, long userId) {
+	public void deleteLikeOnComment(Long likeId, HttpServletRequest request) {
+		String token = jwtUtil.subStringToken(request);
+		Claims claims = jwtUtil.extractClaim(token);
+		String userMail = claims.get("email", String.class);
+		User user = userRepository.findByEmail(userMail)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
 		Like like = likeRepository.findById(likeId).orElseThrow();
 		Comment comment = like.getComment();
 
-		if (!like.getUser().getId().equals(userId)) {
+		if (!like.getUser().getId().equals(user.getId())) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 		}
 

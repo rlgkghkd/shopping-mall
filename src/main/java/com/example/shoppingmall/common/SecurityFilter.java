@@ -3,6 +3,7 @@ package com.example.shoppingmall.common;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +25,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 	 */
 
 	private final JwtUtil jwtUtil;
+	private final RedisTemplate<String, String> redisTemplate;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -41,6 +43,13 @@ public class SecurityFilter extends OncePerRequestFilter {
 		}
 
 		String token = jwtUtil.subStringToken(request);
+
+		String blackList = redisTemplate.opsForValue().get("blacklist" + token);
+
+		if (blackList != null) {
+			throw new IllegalArgumentException("이미 로그아웃된 토큰입니다");
+		}
+
 		/*
 		filterChian.doFilter(request, response)
 		=>  요청을 다음으로 넘기는 것으로

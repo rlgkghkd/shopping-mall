@@ -12,7 +12,6 @@ import com.example.shoppingmall.auth.dto.request.SignUpRequestDto;
 import com.example.shoppingmall.auth.dto.response.LoginResponseDto;
 import com.example.shoppingmall.auth.dto.response.SignUpResponseDto;
 import com.example.shoppingmall.auth.service.AuthService;
-import com.example.shoppingmall.common.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -23,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 	private final AuthService authService;
-	private final JwtUtil jwtUtil;
 
 	@PostMapping("/signup")
 	public ResponseEntity<SignUpResponseDto> signUp(@Valid @RequestBody SignUpRequestDto signupRequestDto) {

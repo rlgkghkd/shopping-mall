@@ -82,8 +82,10 @@ public class AuthService {
 		//레디스로 블랙리스트 관리
 
 		if (jwtUtil.expiration(token) > 0) {
-			redisTemplate.opsForValue()
-				.set("blacklist:" + token, "logout", jwtUtil.expiration(token), TimeUnit.MILLISECONDS);
+			redisTemplate.opsForValue().set(
+				"blacklist:" + token,
+				"logout", jwtUtil.expiration(token),
+				TimeUnit.MILLISECONDS);
 		}
 	}
 }

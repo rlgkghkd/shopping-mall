@@ -40,7 +40,7 @@ public class ItemController {
 		return ResponseEntity.ok(response);
 	}
 
-	//상품 상세 조회 TODO: 댓글 조회 기능 추가 필요
+	//상품 상세 조회
 	@GetMapping("/{id}")
 	public ResponseEntity<ItemResponseDto> getIdByItem(
 		@PathVariable("id") long id) {

@@ -1,10 +1,12 @@
 package com.example.shoppingmall.comment.entity;
 
+import com.example.shoppingmall.comment.dto.request.UpdateCommentRequestDto;
 import com.example.shoppingmall.common.BaseEntity;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.order.entity.Order;
 import com.example.shoppingmall.user.entity.User;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -43,9 +45,12 @@ public class Comment extends BaseEntity {
 	@JoinColumn(name = "order_id", nullable = false)
 	private Order order;
 
-	@OneToOne
-	@JoinColumn(name = "reply_id")
+	@OneToOne(mappedBy = "parentComment", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private Comment reply;
+
+	@OneToOne
+	@JoinColumn(name = "parent_comment_id")
+	private Comment parentComment;
 
 	public Comment(String content, User user, Item item, Order order) {
 		this.content = content;
@@ -54,8 +59,16 @@ public class Comment extends BaseEntity {
 		this.order = order;
 	}
 
+	public void UpdateComment(UpdateCommentRequestDto updateCommentRequestDto) {
+		this.content = updateCommentRequestDto.getContent();
+	}
+
 	public void setReply(Comment reply) {
 		this.reply = reply;
+	}
+
+	public void setParentComment(Comment parentComment) {
+		this.parentComment = parentComment;
 	}
 
 }

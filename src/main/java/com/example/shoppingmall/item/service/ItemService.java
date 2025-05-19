@@ -48,6 +48,17 @@ public class ItemService {
 		return ItemResponseDto.fromEntity(item);
 	}
 
+	@Transactional(readOnly = true)
+	public Page<ItemResponseDto> search(String keyword, Pageable pageable) {
+
+		if (keyword == null || keyword.trim().isEmpty()) {
+			return Page.empty(pageable);
+		}
+
+		Page<Item> items = itemRepository.findByItemNameContaining(keyword, pageable);
+		return items.map(ItemResponseDto::fromEntity);
+	}
+
 	@Transactional
 	public ItemResponseDto updateItem(long id, ItemResponseDto dto) {
 		Item item = itemRepository.findById(id)

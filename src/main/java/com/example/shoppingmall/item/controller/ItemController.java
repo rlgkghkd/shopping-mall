@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.shoppingmall.item.dto.ItemResponseDto;
 import com.example.shoppingmall.item.dto.ItemRequestDto;
 import com.example.shoppingmall.item.service.ItemService;
+import com.example.shoppingmall.search.service.SearchService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class ItemController {
 
 	private final ItemService itemService;
+
+	private final SearchService searchService;
 
 	//상품 등록
 	@PostMapping
@@ -46,6 +50,19 @@ public class ItemController {
 		@PathVariable("id") long id) {
 		ItemResponseDto responseDto = itemService.findById(id);
 		return ResponseEntity.ok(responseDto);
+	}
+
+	//검색 기능
+	@GetMapping("/search")
+	public ResponseEntity<Page<ItemResponseDto>> searchItems(
+		@RequestParam String keyword,
+		@PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+		searchService.saveSearchKeyword(keyword);
+
+		Page<ItemResponseDto> result = itemService.search(keyword, pageable);
+
+		return ResponseEntity.ok(result);
 	}
 
 	//상품 정보 수정

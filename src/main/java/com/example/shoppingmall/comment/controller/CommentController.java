@@ -5,14 +5,20 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.shoppingmall.comment.dto.request.CreateCommentRequestDto;
+import com.example.shoppingmall.comment.dto.request.UpdateCommentRequestDto;
 import com.example.shoppingmall.comment.dto.response.CreateCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.DeleteCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.FindByAllCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.UpdateCommentResponseDto;
 import com.example.shoppingmall.comment.service.CommentService;
 
 import jakarta.validation.Valid;
@@ -37,6 +43,23 @@ public class CommentController {
 	public ResponseEntity<List<FindByAllCommentResponseDto>> findByAllComment() {
 		List<FindByAllCommentResponseDto> findByAllCommentList = commentService.findByAllComment();
 		return ResponseEntity.ok(findByAllCommentList);
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity<UpdateCommentResponseDto> updatedComment(
+		@PathVariable Long id,
+		@Valid @RequestBody UpdateCommentRequestDto updateCommentRequestDto
+	) {
+		UpdateCommentResponseDto updateComment = commentService.updateComment(id, updateCommentRequestDto);
+		return ResponseEntity.ok(updateComment);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<DeleteCommentResponseDto> deletedComment(
+		@PathVariable Long id
+	) {
+		DeleteCommentResponseDto deleteComment = commentService.deleteComment(id);
+		return ResponseEntity.ok(deleteComment);
 	}
 
 }

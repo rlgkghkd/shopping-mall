@@ -6,8 +6,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.shoppingmall.comment.dto.request.CreateCommentRequestDto;
+import com.example.shoppingmall.comment.dto.request.UpdateCommentRequestDto;
 import com.example.shoppingmall.comment.dto.response.CreateCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.DeleteCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.FindByAllCommentResponseDto;
+import com.example.shoppingmall.comment.dto.response.UpdateCommentResponseDto;
 import com.example.shoppingmall.comment.entity.Comment;
 import com.example.shoppingmall.comment.repository.CommentRepository;
 import com.example.shoppingmall.item.entity.Item;
@@ -17,6 +20,7 @@ import com.example.shoppingmall.order.repository.OrderRepository;
 import com.example.shoppingmall.user.entity.User;
 import com.example.shoppingmall.user.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,11 +34,10 @@ public class CommentService {
 
 	public CreateCommentResponseDto createComment(CreateCommentRequestDto createCommentRequestDto) {
 
-		Long itemId = 1L; // 추후에 지울거예요   // ^^;; order.getId()
 		Long userId = 1L; // 추후에 지울거예요   // JWT 유저ID - order.getUserId();  비교용
 
 		Order order = getOrderOrThrow(createCommentRequestDto.getOrderId());
-		Item item = getItemOrThrow(itemId);
+		Item item = getItemOrThrow(order.getItem().getId());
 		User user = getUserOrThrow(userId);
 
 		if (createCommentRequestDto.getCommentId() == null) {
@@ -117,6 +120,7 @@ public class CommentService {
 				parent.getUser().getId(),
 				parent.getContent(),
 				parent.getCreatedAt(),
+				parent.getUpdatedAt(),
 				replyDto
 			);
 
@@ -125,6 +129,31 @@ public class CommentService {
 
 		return findByAllCommentList;
 
+	}
+
+	@Transactional
+	public UpdateCommentResponseDto updateComment(Long id, UpdateCommentRequestDto updateCommentRequestDto) {
+		Comment comment = getCommentOrThrow(id);
+		comment.UpdateComment(updateCommentRequestDto);
+		return new UpdateCommentResponseDto(
+			comment.getId(),
+			comment.getOrder().getId(),
+			comment.getUser().getId(),
+			comment.getContent(),
+			comment.getCreatedAt(),
+			comment.getUpdatedAt()
+		);
+	}
+
+	public DeleteCommentResponseDto deleteComment(Long id) {
+		Comment comment = getCommentOrThrow(id);
+		if (comment.getParentComment() != null) {
+			Comment parentComment = getCommentOrThrow(comment.getParentComment().getId());
+			parentComment.setReply(null);
+			comment.setParentComment(null);
+		}
+		commentRepository.delete(comment);
+		return new DeleteCommentResponseDto("댓글이 삭제 되었습니다.");
 	}
 
 	public User getUserOrThrow(Long userId) {

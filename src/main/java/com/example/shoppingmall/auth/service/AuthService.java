@@ -69,7 +69,7 @@ public class AuthService {
 			throw new IllegalArgumentException("로그인에 실패했습니다.");
 		}
 
-		String token = jwtUtil.createToken(user.get().getId(), user.get().getUserRole());
+		String token = jwtUtil.createToken(user.get().getId(), user.get().getUserRole(), user.get().getEmail());
 		return new LoginResponseDto(token);
 	}
 

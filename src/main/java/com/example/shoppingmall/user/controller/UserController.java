@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.user.dto.request.DeleteRequestDto;
 import com.example.shoppingmall.user.dto.request.UpdatePasswordRequestDto;
 import com.example.shoppingmall.user.dto.response.AdminResponseDto;
 import com.example.shoppingmall.user.dto.response.UserResponseDto;
 import com.example.shoppingmall.user.service.UserService;
 
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -29,44 +29,42 @@ public class UserController {
 
 	@GetMapping()
 	public ResponseEntity<List<AdminResponseDto>> findAll(
-		@AuthenticationPrincipal Claims claim
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		List<AdminResponseDto> adminResponseDto = userService.findAll(claim);
+		List<AdminResponseDto> adminResponseDto = userService.findAll(customUserDetails);
 
 		return new ResponseEntity<>(adminResponseDto, HttpStatus.OK);
 	}
 
 	@GetMapping("/me")
 	public ResponseEntity<UserResponseDto> findById(
-		@AuthenticationPrincipal Claims claim
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		UserResponseDto userResponseDto = userService.findById(claim);
+		UserResponseDto userResponseDto = userService.findById(customUserDetails);
 		return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
 	}
 
 	/*
 	회원 비밀번호 수정
-	암호화 추가 예정
 	 */
 	@PatchMapping()
 	public ResponseEntity<String> updatePassword(
 		@RequestBody UpdatePasswordRequestDto updatePasswordRequestDto,
-		@AuthenticationPrincipal Claims claim
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		userService.updatePassword(updatePasswordRequestDto, claim);
+		userService.updatePassword(updatePasswordRequestDto, customUserDetails);
 		return ResponseEntity.ok("비밀번호 수정이 완료되었습니다");
 	}
 
 	/*
-	회원탈퇴 : 비밀번호 입력으로 한번 더 확인
-	암호화 추가 예정
+	회원탈퇴
 	 */
 	@DeleteMapping()
 	public ResponseEntity<String> delete(
 		@RequestBody DeleteRequestDto deleteRequestDto,
-		@AuthenticationPrincipal Claims claim
+		@AuthenticationPrincipal CustomUserDetails customUserDetails
 	) {
-		userService.delete(deleteRequestDto, claim);
+		userService.delete(deleteRequestDto, customUserDetails);
 		return ResponseEntity.ok("회원을 탈퇴했습니다");
 	}
 }

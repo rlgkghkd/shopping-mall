@@ -59,12 +59,20 @@ public class SecurityFilter extends OncePerRequestFilter {
 				나는 사용자 정보를 내 JWT에 전부 저장하였기때문에 DB에서 조회하지 않고,
 				userdetailsservice를 생략할 수 있다.
 				 */
+				Long userId = Long.parseLong(claim.getSubject());
+				String userRole = claim.get("userRole", String.class); //그래서 꺼낼때도 String으로 꺼내야함
+				String email = claim.get("email", String.class);
+
 				/*
 				JWT에 저장된 유저의 역할을 가져와서 저장하기 위한 코드 => 내가 이넘으로 만든 값을 String으로 바꿔서 저장함
 
 				 */
 				List<SimpleGrantedAuthority> authorities =
-					List.of(new SimpleGrantedAuthority("ROLE_" + claim.get("userRole", String.class)));
+					List.of(new SimpleGrantedAuthority("ROLE_" + userRole));
+
+				CustomUserDetails customUserDetails = new CustomUserDetails(userId, userRole, email);
+
+
 				/*
 				Authentication 객체의 한 구현체이다.
 				현재 인증된 사용자 정보와 권한을 담는다.
@@ -77,7 +85,8 @@ public class SecurityFilter extends OncePerRequestFilter {
 				credentials: 인증 수단 (JWT 인증에서는 null 가능)
 				authorities : 사용자 권한 정보
 				 */
-				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(claim,
+				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+					customUserDetails,
 					null,
 					authorities);
 

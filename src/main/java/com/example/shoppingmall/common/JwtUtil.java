@@ -34,12 +34,13 @@ public class JwtUtil {
 		key = Keys.hmacShaKeyFor(bytes);
 	}
 
-	public String createToken(Long userId, UserRole userRole) {
+	public String createToken(Long userId, UserRole userRole, String email) {
 		Date date = new Date();
 
 		return BEARER_PREFIX + Jwts.builder() //jwt을 이렇게 만들겠다 하는 매서드
 			.setSubject(String.valueOf(userId))
-			.claim("userRole", userRole)
+			.claim("email", email)
+			.claim("userRole", userRole) //enum이어도 자동으로 String으로 들어감
 			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
 			.setIssuedAt(date)
 			.signWith(key, signatureAlgorithm)

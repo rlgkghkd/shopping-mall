@@ -32,6 +32,7 @@ public class ItemService {
 			.content(dto.getContent())
 			.price(dto.getPrice())
 			.category(dto.getCategory())
+			.likeCount(0L)
 			.build();
 
 		Item saved = itemRepository.save(item);

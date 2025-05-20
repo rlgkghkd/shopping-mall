@@ -42,6 +42,17 @@ public class Item extends BaseEntity {
 	@Column(nullable = false)
 	private Category category;
 
+	@Column(columnDefinition = "bigint default 0")
+	private Long likeCount;
+
+	public void increaseLikeCount(Long amount) {
+		this.likeCount += amount;
+	}
+
+	public void decreaseLikeCount(Long amount) {
+		this.likeCount -= amount;
+	}
+
 	public void update(String itemName, String content, int price, Category category) {
 		this.itemName = itemName;
 		this.content = content;

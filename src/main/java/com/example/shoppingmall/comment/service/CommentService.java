@@ -149,8 +149,11 @@ public class CommentService {
 		Comment comment = getCommentOrThrow(id);
 		User user = getUserOrThrow(customUserDetails.getUserId());
 
-		if (!comment.getUser().getId().equals(user.getId())) {
-			throw new IllegalArgumentException("본인 댓글이 아니면 조회할 수 없습니다.");
+		boolean isWriter = comment.getUser().getId().equals(user.getId());
+		boolean isAdmin = user.getUserRole() == UserRole.ADMIN;
+
+		if (!isWriter && !isAdmin) {
+			throw new IllegalArgumentException("댓글을 조회할 권한이 없습니다. 작성자 또는 관리자만 조회할 수 있습니다.");
 		}
 
 		// 답글이 존재하면 DTO로 변환
@@ -181,8 +184,18 @@ public class CommentService {
 	}
 
 	@Transactional
-	public UpdateCommentResponseDto updateComment(Long id, UpdateCommentRequestDto updateCommentRequestDto) {
+	public UpdateCommentResponseDto updateComment(
+		Long id,
+		UpdateCommentRequestDto updateCommentRequestDto,
+		CustomUserDetails customUserDetails
+	) {
+		User user = getUserOrThrow(customUserDetails.getUserId());
 		Comment comment = getCommentOrThrow(id);
+
+		if (!comment.getUser().getId().equals(user.getId())) {
+			throw new IllegalArgumentException("댓글을 수정할 권한이 없습니다. 작성자만 댓글을 수정할 수 있습니다.");
+		}
+
 		comment.UpdateComment(updateCommentRequestDto);
 		return new UpdateCommentResponseDto(
 			comment.getId(),
@@ -194,8 +207,17 @@ public class CommentService {
 		);
 	}
 
-	public DeleteCommentResponseDto deleteComment(Long id) {
+	public DeleteCommentResponseDto deleteComment(Long id, CustomUserDetails customUserDetails) {
 		Comment comment = getCommentOrThrow(id);
+		User user = getUserOrThrow(customUserDetails.getUserId());
+
+		boolean isWriter = comment.getUser().getId().equals(user.getId());
+		boolean isAdmin = user.getUserRole() == UserRole.ADMIN;
+
+		if (!isWriter && !isAdmin) {
+			throw new IllegalArgumentException("댓글을 삭제할 권한이 없습니다. 작성자 또는 관리자만 댓글을 삭제할 수 있습니다.");
+		}
+
 		if (comment.getParentComment() != null) {
 			Comment parentComment = getCommentOrThrow(comment.getParentComment().getId());
 			parentComment.setReply(null);

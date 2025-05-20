@@ -1,5 +1,7 @@
 package com.example.shoppingmall.item.dto;
 
+import java.io.Serializable;
+
 import com.example.shoppingmall.item.Category;
 import com.example.shoppingmall.item.entity.Item;
 
@@ -10,7 +12,11 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class ItemResponseDto {
+// Serializable 직렬화
+public class ItemResponseDto implements Serializable {
+
+	private static final long serialVersionUID = 1L; // 직렬화 UID
+
 	private long id;
 	private String itemName;
 	private String content;

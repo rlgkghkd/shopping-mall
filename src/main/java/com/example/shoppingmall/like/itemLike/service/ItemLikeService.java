@@ -7,9 +7,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.shoppingmall.common.DistributedLock;
 import com.example.shoppingmall.common.JwtUtil;
+import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
-import com.example.shoppingmall.like.exception.AlreadyLikedException;
+import com.example.shoppingmall.like.exception.LikesErrors;
 import com.example.shoppingmall.like.exception.NoTokenException;
 import com.example.shoppingmall.like.exception.WrongUsersLikeException;
 import com.example.shoppingmall.like.itemLike.dto.LeaveItemLikeResponseDto;
@@ -34,7 +35,7 @@ public class ItemLikeService {
 	public LeaveItemLikeResponseDto leaveLikeOnItem(Long itemId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
 		if (token == null) {
-			throw new NoTokenException("토큰이 존재하지 않습니다.");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		}
 		Claims claims = jwtUtil.extractClaim(token);
 
@@ -45,7 +46,7 @@ public class ItemLikeService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
 
 		if (itemLikeRepository.searchLikeByUserAndItem(user.getId(), item)) {
-			throw new AlreadyLikedException("이미 좋아요 한 상품입니다.");
+			throw new CustomException(LikesErrors.AlreadyLiked);
 		}
 
 		ItemLike itemLike = new ItemLike(item, user);

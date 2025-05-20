@@ -9,13 +9,11 @@ import com.example.shoppingmall.comment.entity.Comment;
 import com.example.shoppingmall.comment.repository.CommentRepository;
 import com.example.shoppingmall.common.DistributedLock;
 import com.example.shoppingmall.common.JwtUtil;
+import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.like.commentLike.dto.LeaveCommentLikeResponseDto;
 import com.example.shoppingmall.like.commentLike.entity.CommentLike;
 import com.example.shoppingmall.like.commentLike.repository.CommentLikeRepository;
-import com.example.shoppingmall.like.exception.AlreadyLikedException;
-import com.example.shoppingmall.like.exception.NoLikeFoundException;
-import com.example.shoppingmall.like.exception.NoTokenException;
-import com.example.shoppingmall.like.exception.WrongUsersLikeException;
+import com.example.shoppingmall.like.exception.LikesErrors;
 import com.example.shoppingmall.user.entity.User;
 import com.example.shoppingmall.user.repository.UserRepository;
 
@@ -35,7 +33,7 @@ public class CommentLikeService {
 	public LeaveCommentLikeResponseDto leaveLikeOnItem(Long commentId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
 		if (token == null) {
-			throw new NoTokenException("토큰을 찾을 수 없습니다.");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다.");
 		}
 		Claims claims = jwtUtil.extractClaim(token);
 
@@ -46,7 +44,7 @@ public class CommentLikeService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
 		if (commentLikeRepository.searchLikeByUserAndComment(user.getId(), comment)) {
-			throw new AlreadyLikedException("이미 좋아요 한 댓글입니다.");
+			throw new CustomException(LikesErrors.AlreadyLiked);
 		}
 
 		CommentLike commentLike = new CommentLike(comment, user);

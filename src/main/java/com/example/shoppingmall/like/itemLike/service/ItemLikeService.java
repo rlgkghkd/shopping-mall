@@ -30,15 +30,19 @@ public class ItemLikeService {
 	@Transactional
 	public LeaveItemLikeResponseDto leaveLikeOnItem(Long itemId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
+		if (token == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token 없음");
+		}
 		Claims claims = jwtUtil.extractClaim(token);
 
-		Item item = itemRepository.findById(itemId).orElseThrow();
+		Item item = itemRepository.findById(itemId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "item 없음"));
 		String userMail = claims.get("email", String.class);
 		User user = userRepository.findByEmail(userMail)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
 
 		if (itemLikeRepository.searchLikeByUserAndItem(user.getId(), item)) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 있는 like");
 		}
 
 		ItemLike itemLike = new ItemLike(item, user);
@@ -53,16 +57,25 @@ public class ItemLikeService {
 	@DistributedLock(key = "delete Like")
 	public void deleteLikeOnItem(Long likeId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
+		if (token == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token 없음");
+		}
+
 		Claims claims = jwtUtil.extractClaim(token);
 		String userMail = claims.get("email", String.class);
-		User user = userRepository.findByEmail(userMail)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		if (userMail == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token에 email 없음");
+		}
 
-		ItemLike like = itemLikeRepository.findById(likeId).orElseThrow();
+		User user = userRepository.findByEmail(userMail)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
+
+		ItemLike like = itemLikeRepository.findById(likeId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ItemLike 없음"));
 		Item item = like.getItem();
 
 		if (!like.getUser().getId().equals(user.getId())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user 불일치");
 		}
 
 		itemLikeRepository.delete(like);

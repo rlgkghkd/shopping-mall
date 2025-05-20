@@ -30,15 +30,19 @@ public class CommentLikeService {
 	@Transactional
 	public LeaveCommentLikeResponseDto leaveLikeOnItem(Long commentId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
+		if (token == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token 없음");
+		}
 		Claims claims = jwtUtil.extractClaim(token);
 
-		Comment comment = commentRepository.findById(commentId).orElseThrow();
+		Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment 없음"));
 		String userMail = claims.get("email", String.class);
 		User user = userRepository.findByEmail(userMail)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
 		if (commentLikeRepository.searchLikeByUserAndComment(user.getId(), comment)) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 있는 like");
 		}
 
 		CommentLike commentLike = new CommentLike(comment, user);
@@ -54,17 +58,25 @@ public class CommentLikeService {
 	@DistributedLock(key = "delete Like")
 	public void deleteLikeOnItem(Long likeId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
+		if (token == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token 없음");
+		}
+
 		Claims claims = jwtUtil.extractClaim(token);
 		String userMail = claims.get("email", String.class);
-		User user = userRepository.findByEmail(userMail)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-		CommentLike commentLike = commentLikeRepository.findById(likeId).orElseThrow();
-		Comment comment = commentLike.getComment();
-
-		if (!commentLike.getUser().getId().equals(user.getId())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+		if (userMail == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token에 email 없음");
 		}
+		User user = userRepository.findByEmail(userMail)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
+
+		CommentLike commentLike = commentLikeRepository.findById(likeId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment like 없음"));
+		if (!commentLike.getUser().getId().equals(user.getId())) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user 불일치");
+		}
+
+		Comment comment = commentLike.getComment();
 
 		commentLikeRepository.delete(commentLike);
 		comment.decreaseLikeCount(1L);

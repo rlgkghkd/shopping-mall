@@ -1,4 +1,4 @@
-package com.example.shoppingmall.like.dto;
+package com.example.shoppingmall.like.commentLike.dto;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeaveLikeResponseDto {
+public class LeaveCommentLikeResponseDto {
 	private String likedContent;
 	private Long likedContentId;
 	private Long likeId;

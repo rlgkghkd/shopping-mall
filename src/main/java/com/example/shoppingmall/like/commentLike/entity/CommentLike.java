@@ -1,11 +1,10 @@
-package com.example.shoppingmall.like.entity;
+package com.example.shoppingmall.like.commentLike.entity;
 
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 
 import com.example.shoppingmall.comment.entity.Comment;
-import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -21,10 +20,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Entity(name = "likes")
+@Entity(name = "comment_likes")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Like {
+public class CommentLike {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -34,10 +34,6 @@ public class Like {
 	private Comment comment;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "item_id")
-	private Item item;
-
-	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
@@ -45,9 +41,8 @@ public class Like {
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
-	public Like(Comment comment, Item item, User user) {
+	public CommentLike(Comment comment, User user) {
 		this.comment = comment;
-		this.item = item;
 		this.user = user;
 	}
 }

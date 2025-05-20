@@ -13,8 +13,10 @@ import com.example.shoppingmall.comment.dto.response.FindByAllCommentResponseDto
 import com.example.shoppingmall.comment.dto.response.FindByIdCommentResponseDto;
 import com.example.shoppingmall.comment.dto.response.UpdateCommentResponseDto;
 import com.example.shoppingmall.comment.entity.Comment;
+import com.example.shoppingmall.comment.exception.CommentErrorCode;
 import com.example.shoppingmall.comment.repository.CommentRepository;
 import com.example.shoppingmall.common.CustomUserDetails;
+import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.order.entity.Order;
@@ -47,7 +49,7 @@ public class CommentService {
 
 			// 로그인한 유저와 주문한 유저가 다르면 예외 처리
 			if (!order.getUser().getId().equals(user.getId())) {
-				throw new IllegalArgumentException("댓글을 작성할 권한이 없습니다. 주문자만 댓글을 작성할 수 있습니다.");
+				throw new CustomException(CommentErrorCode.NAUTHORIZED_COMMENT_CREATION);
 			}
 
 			Comment comment = new Comment(
@@ -70,13 +72,13 @@ public class CommentService {
 		} else {
 			// 관리자가 아니면 예외 처리
 			if (user.getUserRole() != UserRole.ADMIN) {
-				throw new IllegalArgumentException("답글은 관리자만 달 수 있습니다.");
+				throw new CustomException(CommentErrorCode.UNAUTHORIZED_REPLY_CREATION);
 			}
 
 			Comment parentComment = getCommentOrThrow(createCommentRequestDto.getCommentId());
 
 			if (parentComment.getReply() != null) {
-				throw new IllegalArgumentException("이미 답글이 존재합니다.");
+				throw new CustomException(CommentErrorCode.REPLY_ALREADY_EXISTS);
 			}
 
 			// reply 먼저 저장
@@ -153,7 +155,7 @@ public class CommentService {
 		boolean isAdmin = user.getUserRole() == UserRole.ADMIN;
 
 		if (!isWriter && !isAdmin) {
-			throw new IllegalArgumentException("댓글을 조회할 권한이 없습니다. 작성자 또는 관리자만 조회할 수 있습니다.");
+			throw new CustomException(CommentErrorCode.UNAUTHORIZED_COMMENT_VIEW);
 		}
 
 		// 답글이 존재하면 DTO로 변환
@@ -193,7 +195,7 @@ public class CommentService {
 		Comment comment = getCommentOrThrow(id);
 
 		if (!comment.getUser().getId().equals(user.getId())) {
-			throw new IllegalArgumentException("댓글을 수정할 권한이 없습니다. 작성자만 댓글을 수정할 수 있습니다.");
+			throw new CustomException(CommentErrorCode.UNAUTHORIZED_COMMENT_UPDATE);
 		}
 
 		comment.UpdateComment(updateCommentRequestDto);
@@ -215,7 +217,7 @@ public class CommentService {
 		boolean isAdmin = user.getUserRole() == UserRole.ADMIN;
 
 		if (!isWriter && !isAdmin) {
-			throw new IllegalArgumentException("댓글을 삭제할 권한이 없습니다. 작성자 또는 관리자만 댓글을 삭제할 수 있습니다.");
+			throw new CustomException(CommentErrorCode.UNAUTHORIZED_COMMENT_DELETE);
 		}
 
 		if (comment.getParentComment() != null) {
@@ -228,19 +230,21 @@ public class CommentService {
 	}
 
 	public User getUserOrThrow(Long userId) {
-		return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+		return userRepository.findById(userId).orElseThrow(() -> new CustomException(CommentErrorCode.USER_NOT_FOUND));
 	}
 
 	public Item getItemOrThrow(Long itemId) {
-		return itemRepository.findById(itemId).orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+		return itemRepository.findById(itemId).orElseThrow(() -> new CustomException(CommentErrorCode.ITEM_NOT_FOUND));
 	}
 
 	public Order getOrderOrThrow(Long orderId) {
-		return orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("주문 내역을 찾을 수 없습니다."));
+		return orderRepository.findById(orderId)
+			.orElseThrow(() -> new CustomException(CommentErrorCode.ORDER_NOT_FOUND));
 	}
 
 	public Comment getCommentOrThrow(Long commentId) {
-		return commentRepository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+		return commentRepository.findById(commentId)
+			.orElseThrow(() -> new CustomException(CommentErrorCode.COMMENT_NOT_FOUND));
 	}
 
 }

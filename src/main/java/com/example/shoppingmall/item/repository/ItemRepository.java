@@ -15,4 +15,5 @@ public interface ItemRepository extends JpaRepository<Item, Long>, ItemRepositor
 	@Query("SELECT i FROM Item i WHERE i.itemName LIKE %:keyword%")
 	Page<Item> findByItemNameContaining(@Param("keyword") String keyword, Pageable pageable);
 
+	boolean existsByItemName(String itemName);
 }

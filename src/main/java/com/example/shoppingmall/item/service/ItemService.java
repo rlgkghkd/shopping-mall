@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.item.dto.ItemRequestDto;
 import com.example.shoppingmall.item.dto.ItemResponseDto;
 import com.example.shoppingmall.item.entity.Item;
+import com.example.shoppingmall.item.exception.ItemErrorCode;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.search.service.SearchService;
 
@@ -26,6 +28,18 @@ public class ItemService {
 	private final SearchService searchService;
 
 	public ItemResponseDto addItem(ItemRequestDto dto) {
+
+		if (dto.getItemName() == null || dto.getItemName().trim().isEmpty()) {
+			throw new CustomException(ItemErrorCode.INVALID_ITEM_NAME);
+		}
+
+		if (dto.getPrice() < 0) {
+			throw new CustomException(ItemErrorCode.INVALID_ITEM_PRICE);
+		}
+
+		if (itemRepository.existsByItemName(dto.getItemName())) {
+			throw new CustomException(ItemErrorCode.DUPLICATE_ITEM_NAME);
+		}
 
 		Item item = Item.builder()
 			.itemName(dto.getItemName())
@@ -99,6 +113,14 @@ public class ItemService {
 	public ItemResponseDto updateItem(long id, ItemRequestDto dto) {
 		Item item = itemRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+
+		if (dto.getItemName() == null || dto.getItemName().trim().isEmpty()) {
+			throw new CustomException(ItemErrorCode.INVALID_ITEM_NAME);
+		}
+
+		if (dto.getPrice() < 0) {
+			throw new CustomException(ItemErrorCode.INVALID_ITEM_PRICE);
+		}
 
 		item.update(dto.getItemName(), dto.getContent(), dto.getPrice(), dto.getCategory());
 

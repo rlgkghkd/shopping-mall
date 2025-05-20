@@ -15,6 +15,7 @@ import com.example.shoppingmall.like.itemLike.dto.LeaveItemLikeResponseDto;
 import com.example.shoppingmall.like.itemLike.entity.ItemLike;
 import com.example.shoppingmall.like.itemLike.repository.ItemLikeRepository;
 import com.example.shoppingmall.user.entity.User;
+import com.example.shoppingmall.user.exception.UserErrorCode;
 import com.example.shoppingmall.user.repository.UserRepository;
 
 import io.jsonwebtoken.Claims;
@@ -66,7 +67,7 @@ public class ItemLikeService {
 		Claims claims = jwtUtil.extractClaim(token);
 		String userMail = claims.get("email", String.class);
 		if (userMail == null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token에 email 없음");
+			throw new CustomException(UserErrorCode.NOT_FOUND_USER);
 		}
 
 		User user = userRepository.findByEmail(userMail)

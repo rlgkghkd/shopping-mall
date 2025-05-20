@@ -44,7 +44,7 @@ public class CommentLikeService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
 		if (commentLikeRepository.searchLikeByUserAndComment(user.getId(), comment)) {
-			throw new CustomException(LikesErrors.AlreadyLiked);
+			throw new CustomException(LikesErrors.ALREADY_LIKED);
 		}
 
 		CommentLike commentLike = new CommentLike(comment, user);
@@ -61,7 +61,7 @@ public class CommentLikeService {
 	public void deleteLikeOnItem(Long likeId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
 		if (token == null) {
-			throw new NoTokenException("토큰을 찾을 수 없습니다.");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다.");
 		}
 
 		Claims claims = jwtUtil.extractClaim(token);
@@ -73,9 +73,9 @@ public class CommentLikeService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
 
 		CommentLike commentLike = commentLikeRepository.findById(likeId)
-			.orElseThrow(() -> new NoLikeFoundException("좋아요를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(LikesErrors.NOT_FOUND_LIKE));
 		if (!commentLike.getUser().getId().equals(user.getId())) {
-			throw new WrongUsersLikeException("본인이 남긴 좋아요가 아닙니다.");
+			throw new CustomException(LikesErrors.OTHER_USERS_LIKE);
 		}
 
 		Comment comment = commentLike.getComment();

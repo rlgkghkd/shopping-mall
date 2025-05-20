@@ -9,24 +9,11 @@ import lombok.Getter;
 @Getter
 public enum LikesErrors implements Errors {
 
-	AlreadyLiked(400, "L001", "이미 좋아요 했습니다.");
+	ALREADY_LIKED(400, "L001", "이미 좋아요 했습니다."),
+	OTHER_USERS_LIKE(403, "L002", "본인이 남긴 좋아요가 아닙니다."),
+	NOT_FOUND_LIKE(404, "L003", "좋아요가 존재하지 않습니다.");
 
 	private final int status;
 	private final String code;
 	private final String message;
-
-	@Override
-	public int getStatus() {
-		return status;
-	}
-
-	@Override
-	public String getCode() {
-		return code;
-	}
-
-	@Override
-	public String getMessage() {
-		return message;
-	}
 }

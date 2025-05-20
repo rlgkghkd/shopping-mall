@@ -11,8 +11,6 @@ import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.like.exception.LikesErrors;
-import com.example.shoppingmall.like.exception.NoTokenException;
-import com.example.shoppingmall.like.exception.WrongUsersLikeException;
 import com.example.shoppingmall.like.itemLike.dto.LeaveItemLikeResponseDto;
 import com.example.shoppingmall.like.itemLike.entity.ItemLike;
 import com.example.shoppingmall.like.itemLike.repository.ItemLikeRepository;
@@ -46,7 +44,7 @@ public class ItemLikeService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
 
 		if (itemLikeRepository.searchLikeByUserAndItem(user.getId(), item)) {
-			throw new CustomException(LikesErrors.AlreadyLiked);
+			throw new CustomException(LikesErrors.ALREADY_LIKED);
 		}
 
 		ItemLike itemLike = new ItemLike(item, user);
@@ -62,7 +60,7 @@ public class ItemLikeService {
 	public void deleteLikeOnItem(Long likeId, HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
 		if (token == null) {
-			throw new NoTokenException("토큰이 존재하지 않습니다.");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다.");
 		}
 
 		Claims claims = jwtUtil.extractClaim(token);
@@ -75,11 +73,11 @@ public class ItemLikeService {
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
 
 		ItemLike like = itemLikeRepository.findById(likeId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ItemLike 없음"));
+			.orElseThrow(() -> new CustomException(LikesErrors.NOT_FOUND_LIKE));
 		Item item = like.getItem();
 
 		if (!like.getUser().getId().equals(user.getId())) {
-			throw new WrongUsersLikeException("본인이 남긴 좋아요가 아닙니다.");
+			throw new CustomException(LikesErrors.OTHER_USERS_LIKE);
 		}
 
 		itemLikeRepository.delete(like);

@@ -40,3 +40,8 @@ out/
 
 ### docker-compose ###
 docker-compose.yml
+
+# H2 DB 파일 무시
+*.mv.db
+*.trace.db
+h2db/

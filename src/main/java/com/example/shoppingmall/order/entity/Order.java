@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "orders")
+@Table
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

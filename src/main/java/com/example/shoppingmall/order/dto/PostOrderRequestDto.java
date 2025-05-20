@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostOrderRequestDto {
-	private Long userId;
 	private Long itemId;
 	private String orderAddress;
 	private OrderStatus orderStatus;

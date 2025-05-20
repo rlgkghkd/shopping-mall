@@ -55,13 +55,18 @@ public class ItemController {
 	//검색 기능
 	@GetMapping("/search")
 	public ResponseEntity<Page<ItemResponseDto>> searchItems(
-		@RequestParam String keyword,
+		@RequestParam(required = false) String keyword,
 		@PageableDefault(page = 0, size = 10) Pageable pageable) {
-
-		searchService.saveSearchKeyword(keyword);
-
 		Page<ItemResponseDto> result = itemService.search(keyword, pageable);
+		return ResponseEntity.ok(result);
+	}
 
+	//검색 기능 In-memory Cache 적용 + redis
+	@GetMapping("/v2/search")
+	public ResponseEntity<Page<ItemResponseDto>> searchItemsV2(
+		@RequestParam(required = false) String keyword,
+		@PageableDefault(page = 0, size = 10) Pageable pageable) {
+		Page<ItemResponseDto> result = itemService.searchV2(keyword, pageable);
 		return ResponseEntity.ok(result);
 	}
 
@@ -69,7 +74,7 @@ public class ItemController {
 	@PatchMapping("/{id}")
 	public ResponseEntity<ItemResponseDto> updateItem(
 		@PathVariable("id") Long id,
-		@RequestBody ItemResponseDto dto) {
+		@RequestBody ItemRequestDto dto) {
 		ItemResponseDto response = itemService.updateItem(id, dto);
 		return ResponseEntity.ok(response);
 	}

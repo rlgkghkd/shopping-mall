@@ -1,5 +1,6 @@
 package com.example.shoppingmall.search.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +22,10 @@ public class SearchService {
 
 	// 검색어 저장
 	public void saveSearchKeyword(String keyword) {
+		if (keyword == null) return;
+
+		keyword = keyword.trim();
+		if (keyword.isEmpty()) return;
 		redisTemplate.opsForZSet().incrementScore(KEY, keyword, 1);
 	}
 
@@ -32,10 +37,12 @@ public class SearchService {
 		Set<ZSetOperations.TypedTuple<String>> results =
 			redisTemplate.opsForZSet().reverseRangeWithScores(KEY, start, end);
 
-		if (results == null) return List.of();
+		if (results == null || results.isEmpty()) return Collections.emptyList();
 
 		return results.stream()
 			.map(tuple -> new PopularKeywordResponseDto(tuple.getValue(), tuple.getScore()))
 			.collect(Collectors.toList());
 	}
+
+
 }

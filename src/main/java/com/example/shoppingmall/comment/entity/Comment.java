@@ -52,6 +52,17 @@ public class Comment extends BaseEntity {
 	@JoinColumn(name = "parent_comment_id")
 	private Comment parentComment;
 
+	@Column(columnDefinition = "bigint Default 0")
+	private Long likeCount;
+
+	public void increaseLikeCount(Long amount) {
+		this.likeCount += amount;
+	}
+
+	public void decreaseLikeCount(Long amount) {
+		this.likeCount -= amount;
+	}
+
 	public Comment(String content, User user, Item item, Order order) {
 		this.content = content;
 		this.user = user;

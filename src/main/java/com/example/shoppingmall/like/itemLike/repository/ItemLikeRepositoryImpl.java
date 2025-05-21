@@ -23,7 +23,7 @@ public class ItemLikeRepositoryImpl implements ItemLikeRepositoryCustom {
 			.from(like)
 			.where(
 				user.id.eq(userId),
-				item != null ? qItem.Id.eq(item.getId()) : null
+				item != null ? qItem.id.eq(item.getId()) : null
 			).fetchFirst() != null;
 	}
 }

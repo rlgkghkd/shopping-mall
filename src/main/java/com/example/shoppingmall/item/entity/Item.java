@@ -27,7 +27,7 @@ public class Item extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(nullable = false)
-	private Long Id;
+	private Long id;
 
 	@Column(nullable = false)
 	private String itemName;
@@ -59,5 +59,10 @@ public class Item extends BaseEntity {
 		this.price = price;
 		this.category = category;
 
+	}
+
+	// 테스트용 setter 추가
+	public void setId(Long id) {
+		this.id = id;
 	}
 }

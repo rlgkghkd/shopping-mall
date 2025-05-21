@@ -1,12 +1,12 @@
 package com.example.shoppingmall.order.service;
 
+import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.order.dto.OrderResponseDto;
 import com.example.shoppingmall.order.dto.PostOrderRequestDto;
 import com.example.shoppingmall.order.entity.Order;
 import com.example.shoppingmall.order.exception.OrderErrorCode;
-import com.example.shoppingmall.order.exception.OrderException;
 import com.example.shoppingmall.order.repository.OrderRepository;
 import com.example.shoppingmall.order.type.OrderStatus;
 import com.example.shoppingmall.user.entity.User;
@@ -29,10 +29,10 @@ public class OrderService {
 	@Transactional
 	public OrderResponseDto createOrder(Long userId, PostOrderRequestDto request) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new OrderException(OrderErrorCode.USER_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(OrderErrorCode.USER_NOT_FOUND));
 
 		Item item = itemRepository.findById(request.getItemId())
-				.orElseThrow(() -> new OrderException(OrderErrorCode.ITEM_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(OrderErrorCode.ITEM_NOT_FOUND));
 
 		Order order = new Order(user, item, request.getOrderAddress(),
 				request.getOrderStatus(), request.getOrderPrice());
@@ -44,12 +44,15 @@ public class OrderService {
 	// 주문 상태 수정(관리자만 가능)
 	@Transactional
 	public OrderResponseDto updateOrder(Long orderId, OrderStatus status, UserRole role) {
+		if (status == null) {
+			throw new CustomException(OrderErrorCode.ORDER_STATUS_REQUIRED);
+		}
 		if (role == UserRole.USER) {
-			throw new OrderException(OrderErrorCode.FORBIDDEN_ORDER_STATUS_UPDATE);
+			throw new CustomException(OrderErrorCode.FORBIDDEN_ORDER_STATUS_UPDATE);
 		}
 
 		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
 		order.updateStatus(status);
 		return new OrderResponseDto(order, "주문 상태 변경 완료");
@@ -59,21 +62,25 @@ public class OrderService {
 	@Transactional
 	public String cancelOrder(Long orderId, Long userId, UserRole role) {
 		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
 		OrderStatus status = order.getOrderStatus();
 
+		if (status == OrderStatus.CANCELED) {
+			throw new CustomException(OrderErrorCode.ALREADY_CANCELED); // 새 에러코드
+		}
+
 		if (role == UserRole.USER && status != OrderStatus.PENDING) {
-			throw new OrderException(OrderErrorCode.INVALID_CANCEL_STATUS_USER);
+			throw new CustomException(OrderErrorCode.INVALID_CANCEL_STATUS_USER);
 		}
 
 		if (role == UserRole.ADMIN && !(status == OrderStatus.PENDING
 				|| status == OrderStatus.PROCESSING)) {
-			throw new OrderException(OrderErrorCode.INVALID_CANCEL_STATUS_ADMIN);
+			throw new CustomException(OrderErrorCode.INVALID_CANCEL_STATUS_ADMIN);
 		}
 
 		if (role == UserRole.USER && !order.getUser().getId().equals(userId)) {
-			throw new OrderException(OrderErrorCode.FORBIDDEN_ORDER_ACCESS);
+			throw new CustomException(OrderErrorCode.FORBIDDEN_ORDER_ACCESS);
 		}
 
 		order.updateStatus(OrderStatus.CANCELED);
@@ -101,10 +108,10 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public OrderResponseDto getOrder(Long id, Long userId, UserRole role) {
 		Order order = orderRepository.findById(id)
-				.orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
 
 		if (role == UserRole.USER && !order.getUser().getId().equals(userId)) {
-			throw new OrderException(OrderErrorCode.FORBIDDEN_ORDER_ACCESS);
+			throw new CustomException(OrderErrorCode.FORBIDDEN_ORDER_ACCESS);
 		}
 
 		return new OrderResponseDto(order);

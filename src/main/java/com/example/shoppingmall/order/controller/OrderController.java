@@ -1,11 +1,11 @@
 package com.example.shoppingmall.order.controller;
 
 import com.example.shoppingmall.common.JwtUtil;
+import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.order.dto.OrderResponseDto;
 import com.example.shoppingmall.order.dto.PostOrderRequestDto;
 import com.example.shoppingmall.order.dto.PutOrderRequestDto;
 import com.example.shoppingmall.order.exception.OrderErrorCode;
-import com.example.shoppingmall.order.exception.OrderException;
 import com.example.shoppingmall.order.service.OrderService;
 import com.example.shoppingmall.user.enums.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -32,15 +31,20 @@ public class OrderController {
 
 	private final OrderService orderService;
 	private final JwtUtil jwtUtil;
+
 	// 주문 생성(로그인 유저만 가능)
 	@PostMapping
 	public ResponseEntity<OrderResponseDto> create(@RequestBody @Valid PostOrderRequestDto dto,
 			HttpServletRequest request) {
 		String token = jwtUtil.subStringToken(request);
+		if (token == null || token.isBlank()) {
+			throw new CustomException(OrderErrorCode.UNAUTHORIZED_USER);
+		}
 		Long userId = jwtUtil.getUserIdFromToken(token);
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(orderService.createOrder(userId, dto));
 	}
+
 	// 주문 상태 수정(관리자만 가능)
 	@PutMapping("/{id}")
 	public ResponseEntity<OrderResponseDto> update(@PathVariable Long id,
@@ -51,6 +55,7 @@ public class OrderController {
 
 		return ResponseEntity.ok(orderService.updateOrder(id, dto.getOrderStatus(), role));
 	}
+
 	// 주문취소(유저는 PENDING 상태만, 관리자는 PROCESSING 까지)
 	@PatchMapping("/{id}/cancel")
 	public ResponseEntity<Map<String, String>> cancel(@PathVariable Long id,
@@ -78,7 +83,7 @@ public class OrderController {
 		UserRole role = jwtUtil.getUserRoleFromToken(token);
 
 		if (role != UserRole.ADMIN) {
-			throw new OrderException(OrderErrorCode.FORBIDDEN_ORDER_LIST_ACCESS);
+			throw new CustomException(OrderErrorCode.FORBIDDEN_ORDER_LIST_ACCESS);
 		}
 
 		return ResponseEntity.ok(orderService.getAllOrders());

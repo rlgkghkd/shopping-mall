@@ -2,10 +2,8 @@ package com.example.shoppingmall.order.dto;
 
 import com.example.shoppingmall.order.type.OrderStatus;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @NoArgsConstructor
 public class PutOrderRequestDto {
 

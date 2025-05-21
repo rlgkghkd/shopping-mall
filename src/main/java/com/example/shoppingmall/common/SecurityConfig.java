@@ -30,6 +30,7 @@ public class SecurityConfig {
 				auth -> auth
 					.requestMatchers("/api/auth/**")
 					.permitAll()
+					.requestMatchers("/api/orders/**").authenticated()
 					.requestMatchers("/api/items/v2/search").permitAll()
 					.requestMatchers(HttpMethod.GET, "/api/users")
 					.hasRole("ADMIN")

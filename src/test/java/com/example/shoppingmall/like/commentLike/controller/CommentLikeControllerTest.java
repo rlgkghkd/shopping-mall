@@ -34,7 +34,7 @@ class CommentLikeControllerTest {
 	@Test
 	void leaveLikeOnComment() throws Exception {
 		Long commentId = 1L;
-		when(commentLikeService.leaveLikeOnItem(anyLong(), any())).thenReturn(new LeaveCommentLikeResponseDto());
+		when(commentLikeService.leaveLikeOnComment(anyLong(), any())).thenReturn(new LeaveCommentLikeResponseDto());
 
 		mockMvc.perform(post("/comment/" + commentId + "/likes")
 				.with(csrf()))

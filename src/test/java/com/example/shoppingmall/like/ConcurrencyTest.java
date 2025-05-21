@@ -1,4 +1,4 @@
-package com.example.shoppingmall.like.service;
+package com.example.shoppingmall.like;
 
 import java.util.stream.IntStream;
 
@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletRequest;
 
+import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.item.Category;
 import com.example.shoppingmall.item.entity.Item;
 import com.example.shoppingmall.item.repository.ItemRepository;
@@ -19,7 +19,7 @@ import com.example.shoppingmall.user.enums.UserRole;
 import com.example.shoppingmall.user.repository.UserRepository;
 
 @SpringBootTest()
-class CommentLikeServiceTest {
+class ConcurrencyTest {
 
 	@Autowired
 	private ItemLikeService itemLikeService;
@@ -47,12 +47,7 @@ class CommentLikeServiceTest {
 
 	@Test
 	void conTest() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setMethod("DELETE");  // HTTP 메서드 설정
-		request.addHeader("Authorization",
-			"Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ0ZXN0QG1haWwuY29tIiwidXNlclJvbGUiOiJBRE1JTiIsImV4cCI6MTc0NzY1NDk1NiwiaWF0IjoxNzQ3NjUxMzU2fQ.eRRXY2miNpFJqe3Qaj_p9-qEpD6kzDdYNqaqb_pJOnw"); // 헤더 설정
-		request.addParameter("key", "value");
-
-		IntStream.rangeClosed(1, 100).parallel().forEach(i -> itemLikeService.deleteLikeOnItem((long)i, request));
+		CustomUserDetails userDetails = new CustomUserDetails(1L, "ADMIN", "test@mail.com");
+		IntStream.rangeClosed(1, 100).parallel().forEach(i -> itemLikeService.deleteLikeOnItem((long)i, userDetails));
 	}
 }

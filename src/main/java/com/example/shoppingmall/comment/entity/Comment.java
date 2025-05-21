@@ -53,7 +53,7 @@ public class Comment extends BaseEntity {
 	private Comment parentComment;
 
 	@Column(columnDefinition = "bigint Default 0")
-	private Long likeCount;
+	private Long likeCount = 0L;
 
 	public void increaseLikeCount(Long amount) {
 		this.likeCount += amount;

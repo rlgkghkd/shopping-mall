@@ -29,7 +29,7 @@ jobs:
       # 별도의 설치 없이 gradle을 사용 가능하게 해줌
       - name: Install Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.3
+          gradle wrapper --gradle-version 8.14
 
 
       - name: Clean Gradle Cache

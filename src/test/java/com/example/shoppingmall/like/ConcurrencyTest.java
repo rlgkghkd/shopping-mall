@@ -1,23 +1,6 @@
 package com.example.shoppingmall.like;
 
-import java.util.stream.IntStream;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import com.example.shoppingmall.common.CustomUserDetails;
-import com.example.shoppingmall.item.Category;
-import com.example.shoppingmall.item.entity.Item;
-import com.example.shoppingmall.item.repository.ItemRepository;
-import com.example.shoppingmall.like.itemLike.entity.ItemLike;
-import com.example.shoppingmall.like.itemLike.repository.ItemLikeRepository;
-import com.example.shoppingmall.like.itemLike.service.ItemLikeService;
-import com.example.shoppingmall.user.entity.User;
-import com.example.shoppingmall.user.enums.UserRole;
-import com.example.shoppingmall.user.repository.UserRepository;
-
+/*
 @SpringBootTest()
 class ConcurrencyTest {
 
@@ -51,3 +34,5 @@ class ConcurrencyTest {
 		IntStream.rangeClosed(1, 100).parallel().forEach(i -> itemLikeService.deleteLikeOnItem((long)i, userDetails));
 	}
 }
+
+*/

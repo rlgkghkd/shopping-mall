@@ -71,7 +71,7 @@ public class CommentLikeServiceTest {
 
 			// then
 			assertNotNull(response);
-			assertNull(response.getLikedContentId());
+			assertNull(response.getLikedCommentId());
 			assertEquals(user.getId(), response.getLikeId());
 		}
 

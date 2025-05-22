@@ -23,19 +23,25 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Check Disk Space
+        run: df -h
+
       # gradle 실행 권한 부여
       - name: Grant Execute Permission for Gradle
         run: chmod +x gradlew
+
+      - name: Clean Gradle Cache
+        run: ./gradlew clean
 
       # gradle wrapper 설치
       # 별도의 설치 없이 gradle을 사용 가능하게 해줌
       - name: Install Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.0
+          gradle wrapper --gradle-version 8.3
 
       # jar 빌드
       - name: Build JAR
-        run: ./gradlew bootJar
+        run: ./gradlew bootJar --debug
 
       # 빌드된 jar 서버로 전송
       # 서버와 연결은 ssh 방식, 지정된 주소에 지정된 pem 키 값을 사용해 접속함

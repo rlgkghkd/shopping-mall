@@ -1,24 +1,22 @@
 package com.example.shoppingmall.like.commentLike.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.example.shoppingmall.comment.entity.Comment;
+import com.example.shoppingmall.comment.exception.CommentErrorCode;
 import com.example.shoppingmall.comment.repository.CommentRepository;
+import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.common.DistributedLock;
-import com.example.shoppingmall.common.JwtUtil;
 import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.like.commentLike.dto.LeaveCommentLikeResponseDto;
 import com.example.shoppingmall.like.commentLike.entity.CommentLike;
 import com.example.shoppingmall.like.commentLike.repository.CommentLikeRepository;
 import com.example.shoppingmall.like.exception.LikesErrors;
 import com.example.shoppingmall.user.entity.User;
+import com.example.shoppingmall.user.exception.UserErrorCode;
 import com.example.shoppingmall.user.repository.UserRepository;
 
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,21 +25,15 @@ public class CommentLikeService {
 	private final CommentLikeRepository commentLikeRepository;
 	private final CommentRepository commentRepository;
 	private final UserRepository userRepository;
-	private final JwtUtil jwtUtil;
 
 	@Transactional
-	public LeaveCommentLikeResponseDto leaveLikeOnItem(Long commentId, HttpServletRequest request) {
-		String token = jwtUtil.subStringToken(request);
-		if (token == null) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다.");
-		}
-		Claims claims = jwtUtil.extractClaim(token);
+	public LeaveCommentLikeResponseDto leaveLikeOnComment(Long commentId, CustomUserDetails userDetails) {
 
 		Comment comment = commentRepository.findById(commentId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment 없음"));
-		String userMail = claims.get("email", String.class);
-		User user = userRepository.findByEmail(userMail)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+			.orElseThrow(() -> new CustomException(CommentErrorCode.COMMENT_NOT_FOUND));
+
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND_USER));
 
 		if (commentLikeRepository.searchLikeByUserAndComment(user.getId(), comment)) {
 			throw new CustomException(LikesErrors.ALREADY_LIKED);
@@ -52,25 +44,17 @@ public class CommentLikeService {
 		comment.increaseLikeCount(1L);
 
 		LeaveCommentLikeResponseDto responseDto = new LeaveCommentLikeResponseDto(
-			saved.getComment().getClass().toString(),
-			saved.getComment().getId(), saved.getId(), saved.getCreatedAt());
+			saved.getComment().getId(),
+			saved.getId(),
+			saved.getCreatedAt());
 		return responseDto;
 	}
 
 	@DistributedLock(key = "delete Like")
-	public void deleteLikeOnItem(Long likeId, HttpServletRequest request) {
-		String token = jwtUtil.subStringToken(request);
-		if (token == null) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다.");
-		}
+	public void deleteLikeOnComment(Long likeId, CustomUserDetails userDetails) {
 
-		Claims claims = jwtUtil.extractClaim(token);
-		String userMail = claims.get("email", String.class);
-		if (userMail == null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "token에 email 없음");
-		}
-		User user = userRepository.findByEmail(userMail)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user 없음"));
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND_USER));
 
 		CommentLike commentLike = commentLikeRepository.findById(likeId)
 			.orElseThrow(() -> new CustomException(LikesErrors.NOT_FOUND_LIKE));

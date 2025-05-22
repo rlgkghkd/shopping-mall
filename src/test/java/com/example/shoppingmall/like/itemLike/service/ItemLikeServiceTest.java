@@ -1,48 +1,143 @@
 package com.example.shoppingmall.like.itemLike.service;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.common.JwtUtil;
-import com.example.shoppingmall.like.commentLike.controller.CommentLikeController;
-import com.example.shoppingmall.like.commentLike.service.CommentLikeService;
+import com.example.shoppingmall.common.exception.CustomException;
+import com.example.shoppingmall.item.Category;
+import com.example.shoppingmall.item.entity.Item;
+import com.example.shoppingmall.item.repository.ItemRepository;
+import com.example.shoppingmall.like.exception.LikesErrors;
+import com.example.shoppingmall.like.itemLike.dto.LeaveItemLikeResponseDto;
+import com.example.shoppingmall.like.itemLike.entity.ItemLike;
+import com.example.shoppingmall.like.itemLike.repository.ItemLikeRepository;
+import com.example.shoppingmall.user.entity.User;
+import com.example.shoppingmall.user.enums.UserRole;
+import com.example.shoppingmall.user.repository.UserRepository;
 
-@WebMvcTest(CommentLikeController.class)
+@ExtendWith(MockitoExtension.class)
 public class ItemLikeServiceTest {
 
-	@Autowired
-	private MockMvc mockMvc;
-	@MockitoBean
+	@InjectMocks
+	private ItemLikeService itemLikeService; // 테스트할 서비스 클래스
+
+	@Mock
 	private JwtUtil jwtUtil;
-	@MockitoBean
-	private RedisTemplate redisTemplate;
-	@MockitoBean
-	private CommentLikeService commentLikeService;
-	@MockitoBean
-	private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
-	@Test
-	void givenNoToken_whenDeleteLikeOnItem_thenReturns404NotFound() throws Exception {
-		Long likeId = 1L;
+	@Mock
+	private ItemRepository itemRepository;
 
-		// Given: jwtUtil이 null 값을 반환하도록 설정
-		when(jwtUtil.subStringToken(any())).thenReturn(null);
+	@Mock
+	private UserRepository userRepository;
 
-		// When: 좋아요 삭제 요청을 보냈을 때
-		// Then: HTTP 404 응답을 반환해야 함
-		mockMvc.perform(delete("/comment/" + likeId + "/likes")
-				.with(csrf())) // CSRF 토큰 추가
-			.andExpect(status().isNotFound()) // 404 상태 코드 검증
-			.andExpect(jsonPath("$.message").value("토큰을 찾을 수 없습니다.")); // 메시지 검증
+	@Mock
+	private ItemLikeRepository itemLikeRepository;
+
+	@Mock
+	private CustomUserDetails userDetails;
+
+	@Nested
+	class create {
+		@Test
+		void 상품_좋아요_성공() {
+			// given
+			Long itemId = 1L;
+			Item item = new Item(1L, "testItem", "testContent", 123, Category.Beauty, 0L);
+			given(itemRepository.findById(itemId)).willReturn(Optional.of(item));
+
+			User user = new User("testname", "test@mail", UserRole.ADMIN, "testPass@");
+			given(userRepository.findById(userDetails.getUserId())).willReturn(Optional.of(user));
+
+			ItemLike itemLike = new ItemLike(item, user);
+			given(itemLikeRepository.searchLikeByUserAndItem(user.getId(), item)).willReturn(false);
+			given(itemLikeRepository.save(any(ItemLike.class))).willReturn(itemLike);
+
+			// when
+			LeaveItemLikeResponseDto response = itemLikeService.leaveLikeOnItem(itemId, userDetails);
+
+			// then
+			assertNotNull(response);
+			assertEquals(itemId, response.getLikedContentId());
+			assertEquals(user.getId(), response.getLikeId());
+		}
+
+		@Test
+		void 이미_좋아요_한_상품() {
+			// given
+			Long itemId = 1L;
+			Item item = new Item(1L, "testItem", "testContent", 123, Category.Beauty, 0L);
+			given(itemRepository.findById(itemId)).willReturn(Optional.of(item));
+
+			User user = new User("testname", "test@mail", UserRole.ADMIN, "testPass@");
+			given(userRepository.findById(userDetails.getUserId())).willReturn(Optional.of(user));
+
+			given(itemLikeRepository.searchLikeByUserAndItem(user.getId(), item)).willReturn(true);
+
+			// when
+			CustomException exception = assertThrows(
+				CustomException.class, () -> itemLikeService.leaveLikeOnItem(itemId, userDetails));
+
+			// then
+			assertEquals(LikesErrors.ALREADY_LIKED, exception.getErrors());
+			assertEquals("이미 좋아요 했습니다.", exception.getMessage());
+		}
+	}
+
+	@Nested
+	class delete {
+		@Test
+		void 상품_좋아요_취소() {
+			// given
+			Long likeId = 1L;
+
+			User user = new User(1L, "testname", "test@mail", "testPass@", UserRole.ADMIN, LocalDateTime.now(), false);
+			given(userRepository.findById(userDetails.getUserId())).willReturn(Optional.of(user));
+
+			Item item = new Item(1L, "testItem", "testContent", 123, Category.Beauty, 1L);
+			ItemLike itemLike = new ItemLike(item, user);
+			given(itemLikeRepository.findById(likeId)).willReturn(Optional.of(itemLike));
+
+			// when
+			itemLikeService.deleteLikeOnItem(likeId, userDetails);
+
+			// then
+			verify(itemLikeRepository).delete(itemLike);
+			assertEquals(0L, item.getLikeCount());
+		}
+
+		@Test
+		void 다른_유저의_좋아요() {
+			// given
+			Long likeId = 1L;
+
+			User user = new User(1L, "testname", "test@mail", "testPass@", UserRole.ADMIN, LocalDateTime.now(), false);
+			given(userRepository.findById(userDetails.getUserId())).willReturn(Optional.of(user));
+
+			User otherUser = new User(2L, "testname", "test@mail", "testPass@", UserRole.ADMIN, LocalDateTime.now(),
+				false);
+			Item item = new Item(1L, "testItem", "testContent", 123, Category.Beauty, 1L);
+			ItemLike itemLike = new ItemLike(item, otherUser);
+			given(itemLikeRepository.findById(likeId)).willReturn(Optional.of(itemLike));
+
+			// when
+			CustomException exception = assertThrows(CustomException.class,
+				() -> itemLikeService.deleteLikeOnItem(likeId, userDetails));
+
+			// then
+			assertEquals(LikesErrors.OTHER_USERS_LIKE, exception.getErrors());
+			assertEquals("본인이 남긴 좋아요가 아닙니다.", exception.getMessage());
+		}
 	}
 }

@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LeaveCommentLikeResponseDto {
-	private String likedContent;
-	private Long likedContentId;
+	private Long likedCommentId;
 	private Long likeId;
 	private LocalDateTime createdAt;
 }

@@ -30,14 +30,14 @@ jobs:
       - name: Grant Execute Permission for Gradle
         run: chmod +x gradlew
 
-      - name: Clean Gradle Cache
-        run: ./gradlew clean
-
       # gradle wrapper 설치
       # 별도의 설치 없이 gradle을 사용 가능하게 해줌
       - name: Install Gradle Wrapper
         run: |
           gradle wrapper --gradle-version 8.3
+
+      - name: Clean Gradle Cache
+        run: ./gradlew clean
 
       # jar 빌드
       - name: Build JAR
@@ -80,4 +80,3 @@ jobs:
               fi
             done
             nohup java -jar ~/*.jar > ~/app.log 2>&1 &
-

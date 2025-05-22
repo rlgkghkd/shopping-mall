@@ -1,11 +1,10 @@
 package com.example.shoppingmall.like.commentLike.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.example.shoppingmall.comment.entity.Comment;
+import com.example.shoppingmall.comment.exception.CommentErrorCode;
 import com.example.shoppingmall.comment.repository.CommentRepository;
 import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.common.DistributedLock;
@@ -31,7 +30,7 @@ public class CommentLikeService {
 	public LeaveCommentLikeResponseDto leaveLikeOnComment(Long commentId, CustomUserDetails userDetails) {
 
 		Comment comment = commentRepository.findById(commentId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comment 없음"));
+			.orElseThrow(() -> new CustomException(CommentErrorCode.COMMENT_NOT_FOUND));
 
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND_USER));
@@ -45,7 +44,6 @@ public class CommentLikeService {
 		comment.increaseLikeCount(1L);
 
 		LeaveCommentLikeResponseDto responseDto = new LeaveCommentLikeResponseDto(
-			saved.getComment().getClass().getSimpleName(),
 			saved.getComment().getId(),
 			saved.getId(),
 			saved.getCreatedAt());

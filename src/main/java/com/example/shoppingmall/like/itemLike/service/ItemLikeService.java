@@ -1,14 +1,13 @@
 package com.example.shoppingmall.like.itemLike.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.common.DistributedLock;
 import com.example.shoppingmall.common.exception.CustomException;
 import com.example.shoppingmall.item.entity.Item;
+import com.example.shoppingmall.item.exception.ItemErrorCode;
 import com.example.shoppingmall.item.repository.ItemRepository;
 import com.example.shoppingmall.like.exception.LikesErrors;
 import com.example.shoppingmall.like.itemLike.dto.LeaveItemLikeResponseDto;
@@ -30,7 +29,7 @@ public class ItemLikeService {
 	@Transactional
 	public LeaveItemLikeResponseDto leaveLikeOnItem(Long itemId, CustomUserDetails userDetails) {
 		Item item = itemRepository.findById(itemId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "item 없음"));
+			.orElseThrow(() -> new CustomException(ItemErrorCode.NOT_FOUND_ITEM));
 
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND_USER));
@@ -44,7 +43,6 @@ public class ItemLikeService {
 		item.increaseLikeCount(1L);
 
 		LeaveItemLikeResponseDto responseDto = new LeaveItemLikeResponseDto(
-			saved.getItem().getClass().getSimpleName(),
 			saved.getItem().getId(),
 			saved.getId(),
 			saved.getCreatedAt());

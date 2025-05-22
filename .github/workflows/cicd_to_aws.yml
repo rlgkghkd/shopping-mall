@@ -1,45 +1,39 @@
 name: cicd to aws
 
-# 메인 push되면 실행
 on:
   push:
     branches:
-      - main 
-
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    #repository checkout, 이 경우 main 브랜치
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      #액션에서 사용할 jdk 지정
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # gradle 실행 권한 부여
+      - name: Check Disk Space
+        run: df -h
+
       - name: Grant Execute Permission for Gradle
         run: chmod +x gradlew
 
-      # gradle wrapper 설치
-      # 별도의 설치 없이 gradle을 사용 가능하게 해줌
-      - name: Install Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.0
+      - name: Clean Gradle Cache
+        run: ./gradlew clean
 
-      # jar 빌드
-      - name: Build JAR
-        run: ./gradlew bootJar
+      - name: Install Latest Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.3
 
-      # 빌드된 jar 서버로 전송
-      # 서버와 연결은 ssh 방식, 지정된 주소에 지정된 pem 키 값을 사용해 접속함
-      # appleboy는 파일을 ssh를 통해 복사할 수 있게 해주는 git action
+      - name: Build JAR with Debug Logs
+        run: ./gradlew bootJar --debug
+
       - name: copy jar to server
         uses: appleboy/scp-action@master
         with:
@@ -48,16 +42,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           source: "./build/libs/*.jar"
-          # 홈 디렉터리에 파일을 저장
           target: "~"
-          # 파일의 경로에서 앞의 2개를 삭제
-          # build/libs/*.jar -> *.jar
           strip_components: 2
 
-      # ssh 통신으로 연결된 뒤에 전송할 명령어들
-      # 기존 서버에서 실행되는 모든 자바 프로세스를 종료하고
-      # 전송된 jar을 실행시킴
-      # jar은 실행 시 로그 저장
       - name: SSH Commands
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -74,4 +61,3 @@ jobs:
               fi
             done
             nohup java -jar ~/*.jar > ~/app.log 2>&1 &
-

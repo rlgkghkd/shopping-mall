@@ -1,7 +1,6 @@
 package com.example.shoppingmall.like.itemLike.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.shoppingmall.common.CustomUserDetails;
 import com.example.shoppingmall.common.DistributedLock;
@@ -26,7 +25,7 @@ public class ItemLikeService {
 	private final ItemRepository itemRepository;
 	private final UserRepository userRepository;
 
-	@Transactional
+	@DistributedLock(key = "create Like")
 	public LeaveItemLikeResponseDto leaveLikeOnItem(Long itemId, CustomUserDetails userDetails) {
 		Item item = itemRepository.findById(itemId)
 			.orElseThrow(() -> new CustomException(ItemErrorCode.NOT_FOUND_ITEM));

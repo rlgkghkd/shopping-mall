@@ -24,7 +24,7 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
-	private final RedisTemplate redisTemplate;
+	private final RedisTemplate<String, String> redisTemplate;
 
 	public SignUpResponseDto signUp(SignUpRequestDto signupRequestDto) {
 		/*

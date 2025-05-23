@@ -21,6 +21,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Check Disk Space
+        run: df -h
+
       # gradle 실행 권한 부여
       - name: Grant Execute Permission for Gradle
         run: chmod +x gradlew
@@ -37,8 +40,6 @@ jobs:
 
       # jar 빌드
       - name: Build JAR
-        run: ./gradlew bootJar
-      - name: Build JAR with Debug Logs
         run: ./gradlew bootJar
 
       # 빌드된 jar 서버로 전송

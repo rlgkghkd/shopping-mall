@@ -31,6 +31,11 @@ public class OrderService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(OrderErrorCode.USER_NOT_FOUND));
 
+		if (user.getUserRole() != UserRole.USER) {
+			throw new CustomException(OrderErrorCode.FORBIDDEN_ORDER_CREATE); // 새 에러 코드 필요
+		}
+
+
 		Item item = itemRepository.findById(request.getItemId())
 				.orElseThrow(() -> new CustomException(OrderErrorCode.ITEM_NOT_FOUND));
 

@@ -108,6 +108,18 @@ class OrderServiceTest {
 					.isInstanceOf(CustomException.class)
 					.hasMessage(OrderErrorCode.ITEM_NOT_FOUND.getMessage());
 		}
+
+		@Test
+		@DisplayName("주문 생성 실패 - 관리자 접근 불가")
+		void createOrder_adminForbidden() {
+			when(userRepository.findById(2L)).thenReturn(Optional.of(admin)); // 관리자
+			PostOrderRequestDto request = new PostOrderRequestDto(item.getId(), "주소", OrderStatus.PENDING, 10000);
+
+			assertThatThrownBy(() -> orderService.createOrder(2L, request))
+					.isInstanceOf(CustomException.class)
+					.hasMessage(OrderErrorCode.FORBIDDEN_ORDER_CREATE.getMessage());
+		}
+
 	}
 
 	@Nested

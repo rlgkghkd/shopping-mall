@@ -64,7 +64,7 @@ public class ItemService {
 	@Transactional(readOnly = true)
 	public ItemResponseDto findById(long id) {
 		Item item = itemRepository.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+			.orElseThrow(() -> new CustomException(ItemErrorCode.NOT_FOUND_ITEM));
 		return ItemResponseDto.fromEntity(item);
 	}
 
@@ -112,7 +112,7 @@ public class ItemService {
 	@Transactional
 	public ItemResponseDto updateItem(long id, ItemRequestDto dto) {
 		Item item = itemRepository.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+			.orElseThrow(() -> new CustomException(ItemErrorCode.NOT_FOUND_ITEM));
 
 		if (dto.getItemName() == null || dto.getItemName().trim().isEmpty()) {
 			throw new CustomException(ItemErrorCode.INVALID_ITEM_NAME);
@@ -130,7 +130,7 @@ public class ItemService {
 	@Transactional
 	public void deleteItem(long id) {
 		Item item = itemRepository.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "상품이 존재하지 않습니다."));
+			.orElseThrow(() -> new CustomException(ItemErrorCode.NOT_FOUND_ITEM));
 
 		itemRepository.delete(item);
 	}

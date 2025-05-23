@@ -4,7 +4,7 @@ name: cicd to aws
 on:
   push:
     branches:
-      - likes_test
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest

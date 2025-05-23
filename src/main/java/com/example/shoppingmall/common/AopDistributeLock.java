@@ -34,7 +34,7 @@ public class AopDistributeLock {
 		SingleServerConfig serverConfig = redissonClient.getConfig().useSingleServer();
 		int dbNumber = serverConfig.getDatabase();
 
-		log.info(dbNumber + ": asd");
+		log.info(dbNumber + ": locked");
 
 		boolean isLocked = false;
 		try {

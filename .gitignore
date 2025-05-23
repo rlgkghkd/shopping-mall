@@ -46,3 +46,4 @@ docker-compose.yml
 *.mv.db
 *.trace.db
 h2db/
+/src/main/java/com/example/shoppingmall/common/DummyDataLoader.java

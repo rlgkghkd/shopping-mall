@@ -4,9 +4,7 @@ name: cicd to aws
 on:
   push:
     branches:
-      - main 
-
-
+      - likes_test
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,10 +29,16 @@ jobs:
       # 별도의 설치 없이 gradle을 사용 가능하게 해줌
       - name: Install Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.0
+          gradle wrapper --gradle-version 8.14
+
+
+      - name: Clean Gradle Cache
+        run: ./gradlew clean
 
       # jar 빌드
       - name: Build JAR
+        run: ./gradlew bootJar
+      - name: Build JAR with Debug Logs
         run: ./gradlew bootJar
 
       # 빌드된 jar 서버로 전송
@@ -43,9 +47,9 @@ jobs:
       - name: copy jar to server
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.HKH_SSH_HOST }}
           username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.HKH_SSH_KEY }}
           port: 22
           source: "./build/libs/*.jar"
           # 홈 디렉터리에 파일을 저장
@@ -61,9 +65,9 @@ jobs:
       - name: SSH Commands
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.HKH_SSH_HOST }}
           username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.HKH_SSH_KEY }}
           port: 22
           script_stop: true
           script: |
@@ -74,4 +78,3 @@ jobs:
               fi
             done
             nohup java -jar ~/*.jar > ~/app.log 2>&1 &
-

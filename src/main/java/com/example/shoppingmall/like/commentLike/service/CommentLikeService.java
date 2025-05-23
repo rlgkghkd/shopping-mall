@@ -1,7 +1,6 @@
 package com.example.shoppingmall.like.commentLike.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.shoppingmall.comment.entity.Comment;
 import com.example.shoppingmall.comment.exception.CommentErrorCode;
@@ -26,7 +25,7 @@ public class CommentLikeService {
 	private final CommentRepository commentRepository;
 	private final UserRepository userRepository;
 
-	@Transactional
+	@DistributedLock(key = "create Like")
 	public LeaveCommentLikeResponseDto leaveLikeOnComment(Long commentId, CustomUserDetails userDetails) {
 
 		Comment comment = commentRepository.findById(commentId)

@@ -72,6 +72,12 @@ jobs:
           port: 22
           script_stop: true
           script: |
+              set -x
+              date
+              whoami
+              ls -l /home/ec2-user/start.sh
+              bash /home/ec2-user/start.sh
+              cat /home/ec2-user/remote_ssh_commands.log
               {
               echo "=== $(date) ==="
               echo "Killing existing java processes"

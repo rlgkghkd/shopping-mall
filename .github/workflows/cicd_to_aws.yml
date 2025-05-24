@@ -72,6 +72,5 @@ jobs:
           port: 22
           script_stop: true
           script: |
-            script: |
               pkill -f 'java -jar' || true
               nohup java -jar ~/app.jar > ~/app.log 2> ~/app.err.log &

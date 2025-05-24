@@ -78,12 +78,4 @@ jobs:
               ls -l /home/ec2-user/start.sh
               bash /home/ec2-user/start.sh
               cat /home/ec2-user/remote_ssh_commands.log
-              {
-              echo "=== $(date) ==="
-              echo "Killing existing java processes"
-              pkill -f 'java -jar' || true
-              sleep 1
-              echo "Starting application"
-              bash /home/ec2-user/start.sh
-              echo "Finished"
-              } >> /home/ec2-user/remote_ssh_commands.log 2>&1
+          

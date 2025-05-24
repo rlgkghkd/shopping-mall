@@ -73,4 +73,6 @@ jobs:
           script_stop: true
           script: |
               pkill -f 'java -jar' || true
-              nohup java -jar /home/ec2-user/shoppingMall-0.0.1-SNAPSHOT.jar > /home/ec2-user/app.log 2>&1 &
+              sleep 1
+              nohup bash -lc "java -jar /home/ec2-user/shoppingMall-0.0.1-SNAPSHOT.jar" > /home/ec2-user/app.log 2>&1 &
+              exit 0

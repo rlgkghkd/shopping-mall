@@ -73,4 +73,4 @@ jobs:
           script_stop: true
           script: |
               pkill -f 'java -jar' || true
-              nohup java -jar ~/app.jar > ~/app.log 2> ~/app.err.log &
+              nohup java -jar ~/*.jar > ~/app.log 2>&1 &

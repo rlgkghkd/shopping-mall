@@ -72,6 +72,12 @@ jobs:
           port: 22
           script_stop: true
           script: |
+              {
+              echo "=== $(date) ==="
+              echo "Killing existing java processes"
               pkill -f 'java -jar' || true
               sleep 1
+              echo "Starting application"
               bash /home/ec2-user/start.sh
+              echo "Finished"
+              } >> /home/ec2-user/remote_ssh_commands.log 2>&1

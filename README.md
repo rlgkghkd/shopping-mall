@@ -38,5 +38,5 @@
 -----
 
 ## 📂 API 명세서 
-
+https://www.notion.so/teamsparta/API-1ff2dc3ef514804399d7ffb9eafcab9f
 

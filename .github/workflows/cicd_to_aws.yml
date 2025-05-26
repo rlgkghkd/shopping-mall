@@ -4,9 +4,7 @@ name: cicd to aws
 on:
   push:
     branches:
-      - main 
-
-
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,6 +21,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Check Disk Space
+        run: df -h
+
       # gradle 실행 권한 부여
       - name: Grant Execute Permission for Gradle
         run: chmod +x gradlew
@@ -31,7 +32,11 @@ jobs:
       # 별도의 설치 없이 gradle을 사용 가능하게 해줌
       - name: Install Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.0
+          gradle wrapper --gradle-version 8.14
+
+
+      - name: Clean Gradle Cache
+        run: ./gradlew clean
 
       # jar 빌드
       - name: Build JAR
@@ -43,9 +48,9 @@ jobs:
       - name: copy jar to server
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.HKH_SSH_HOST }}
           username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.HKH_SSH_KEY }}
           port: 22
           source: "./build/libs/*.jar"
           # 홈 디렉터리에 파일을 저장
@@ -61,17 +66,11 @@ jobs:
       - name: SSH Commands
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.HKH_SSH_HOST }}
           username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.HKH_SSH_KEY }}
           port: 22
           script_stop: true
           script: |
-            for pid in $(pgrep java); do
-              if ps -p $pid -o args= | grep -q 'java -jar'; then
-                echo "Java process with 'java -jar' found (PID: $pid). Terminating..."
-                kill -9 $pid
-              fi
-            done
-            nohup java -jar ~/*.jar > ~/app.log 2>&1 &
-
+              pkill -f 'java -jar' || true
+              nohup java /home/ec2-user/shoppingMall-0.0.1-SNAPSHOT.jar > ~/app.log 2>&1 &

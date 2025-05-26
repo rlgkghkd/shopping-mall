@@ -18,7 +18,8 @@ public enum OrderErrorCode implements Errors {
 	INVALID_CANCEL_STATUS_USER(400, "ORD08", "일반 사용자는 PENDING 상태에서만 주문을 취소할 수 있습니다."),
 	INVALID_CANCEL_STATUS_ADMIN(400, "ORD09", "관리자는 PROCESSING 이전까지만 주문을 취소할 수 있습니다."),
 	ALREADY_CANCELED(400, "ORD10", "이미 취소된 주문입니다."),
-	ORDER_STATUS_REQUIRED(400, "ORD11", "주문 상태는 필수입니다.");
+	ORDER_STATUS_REQUIRED(400, "ORD11", "주문 상태는 필수입니다."),
+	FORBIDDEN_ORDER_CREATE(403, "ORD12", "관리자는 주문을 생성할 수 없습니다.");
 
 	private final int status;
 	private final String code;

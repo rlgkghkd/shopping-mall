@@ -44,7 +44,6 @@
 
 -----
 
-## 📂 API 명세서
-
-https://teamsparta.notion.site/SA-1f52dc3ef514801795edda518b8c4b79
+## 📂 API 명세서 
+https://www.notion.so/teamsparta/API-1ff2dc3ef514804399d7ffb9eafcab9f
 
